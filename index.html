@@ -1,11 +1,10 @@
-import weasyprint
-
 html_content = """<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comune di Toffia - Centro Notifiche</title>
+  
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
@@ -16,6 +15,7 @@ html_content = """<!DOCTYPE html>
       });
     });
   </script>
+
   <style>
     /* Reset & Base Styles */
     * {
@@ -38,10 +38,10 @@ html_content = """<!DOCTYPE html>
       padding: 20px;
     }
 
-    /* Header Section */
+    /* Header Section Banner */
     header {
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -49,7 +49,7 @@ html_content = """<!DOCTYPE html>
       margin-top: 15px;
       margin-bottom: 25px;
       padding: 16px 24px;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 20px;
@@ -68,25 +68,17 @@ html_content = """<!DOCTYPE html>
     }
 
     .header-text h1 {
-      font-size: 1.4rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: #0f172a;
-      line-height: 1.2;
-      letter-spacing: -0.3px;
-    }
-
-    .header-text h2 {
-      font-size: 1.15rem;
-      font-weight: 500;
-      color: #2563eb;
-      margin-top: 2px;
+      line-height: 1.3;
     }
 
     /* Main Container / Card */
     .card {
       width: 100%;
-      max-width: 520px;
-      background: rgba(255, 255, 255, 0.95);
+      max-width: 540px;
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-radius: 24px;
@@ -96,76 +88,27 @@ html_content = """<!DOCTYPE html>
       margin-bottom: 25px;
     }
 
-    .card-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #0f172a;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .card-subtitle {
-      font-size: 0.92rem;
-      color: #64748b;
-      text-align: center;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    /* Action Buttons */
-    .btn {
-      width: 100%;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    /* Info Badge (Informativo, non bottone) */
+    .info-banner {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      color: #1e40af;
+      font-size: 0.95rem;
+      line-height: 1.4;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    .info-banner-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
     }
 
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #1d4ed8, #1e40af);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #059669, #047857);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-    }
-
-    .btn-success:hover {
-      background: linear-gradient(135deg, #047857, #065f46);
-      transform: translateY(-1px);
-    }
-
-    .btn-outline-danger {
-      background: transparent;
-      color: #dc2626;
-      border: 1.5px solid #fca5a5;
-      margin-top: 8px;
-      margin-bottom: 0;
-    }
-
-    .btn-outline-danger:hover {
-      background: #fef2f2;
-      border-color: #ef4444;
-    }
-
-    /* Section Divider / Toggles Container */
+    /* Switches Container */
     .toggles-container {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -247,24 +190,188 @@ html_content = """<!DOCTYPE html>
       transform: translateX(24px);
     }
 
-    /* Privacy & Legal Section */
-    .privacy-box {
-      margin-top: 24px;
+    /* Action Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857, #065f46);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline-danger {
+      background: transparent;
+      color: #dc2626;
+      border: 1.5px solid #fca5a5;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    .btn-outline-danger:hover {
+      background: #fef2f2;
+      border-color: #ef4444;
+    }
+
+    /* Privacy Consent Box */
+    .privacy-consent-container {
+      margin-top: 22px;
       padding-top: 18px;
       border-top: 1px solid #e2e8f0;
+    }
+
+    .privacy-checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.83rem;
+      color: #475569;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    .privacy-checkbox-label input[type="checkbox"] {
+      margin-top: 3px;
+      width: 17px;
+      height: 17px;
+      accent-color: #2563eb;
+      cursor: pointer;
+    }
+
+    .privacy-summary {
+      margin-top: 12px;
       font-size: 0.78rem;
       color: #64748b;
       line-height: 1.5;
-      text-align: justify;
     }
 
-    .privacy-box strong {
-      color: #334155;
-    }
-
-    .privacy-link {
+    .btn-policy-link {
+      background: none;
+      border: none;
       color: #2563eb;
+      font-size: 0.8rem;
+      font-weight: 600;
       text-decoration: underline;
+      cursor: pointer;
+      padding: 4px 0;
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    .btn-policy-link:hover {
+      color: #1d4ed8;
+    }
+
+    /* Modal / Popup Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      color: #0f172a;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .modal-body h4 {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      text-align: right;
+    }
+
+    .btn-modal-close {
+      padding: 8px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
       cursor: pointer;
     }
 
@@ -277,51 +384,41 @@ html_content = """<!DOCTYPE html>
       margin-bottom: 10px;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 480px) {
-      body {
-        padding: 12px;
-      }
-      header {
-        padding: 12px 16px;
-      }
-      .card {
-        padding: 24px 18px;
-      }
+      body { padding: 12px; }
+      header { padding: 12px 16px; }
+      .card { padding: 24px 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header Banner -->
   <header>
-    <!-- Logo fallback se il file logo-comune-toffia.png non è ancora stato caricato -->
     <img src="logo-comune-toffia.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Italian_comune_coat_of_arms_template.svg/100px-Italian_comune_coat_of_arms_template.svg.png'" alt="Logo Comune di Toffia">
     <div class="header-text">
-      <h1>Comune di Toffia</h1>
-      <h2>Centro Notifiche</h2>
+      <h1>Benvenuti nel Centro Notifiche del Comune di Toffia</h1>
     </div>
   </header>
 
   <!-- Main Card Container -->
   <div class="card">
-    <h3 class="card-title">Benvenuto nel Servizio Notifiche</h3>
-    <p class="card-subtitle">Personalizza le tue preferenze per rimanere tempestivamente aggiornato sulle novità istituzionali e gli eventi del borgo.</p>
-
-    <!-- Bottone Richiesta Notifiche Web Push (OneSignal) -->
-    <button class="btn btn-primary" id="btn-subscribe-onesignal" onclick="subscribeOneSignal()">
-      🔔 Accetta di ricevere le notifiche
-    </button>
+    
+    <!-- Box informativo (NON un bottone) -->
+    <div class="info-banner">
+      <span class="info-banner-icon">ℹ️</span>
+      <div>Personalizza le notifiche qui sotto e accetta di riceverle per rimanere aggiornato.</div>
+    </div>
 
     <!-- Selettori Notifiche (Switches) -->
     <div class="toggles-container">
       <div class="toggle-row">
         <div class="toggle-info">
           <div class="toggle-title">Comunicazioni Istituzionali e Servizi</div>
-          <div class="toggle-desc">Avvisi comunali, ordinanze, allerta meteo e scadenze dei servizi.</div>
+          <div class="toggle-desc">Avvisi comunali, allerta meteo, ordinanze e scadenze dei servizi.</div>
         </div>
         <label class="switch">
-          <input type="checkbox" id="toggle-ist" onchange="updateCategoryState()">
+          <input type="checkbox" id="toggle-ist" onchange="syncOneSignalTags()">
           <span class="slider"></span>
         </label>
       </div>
@@ -329,27 +426,70 @@ html_content = """<!DOCTYPE html>
       <div class="toggle-row">
         <div class="toggle-info">
           <div class="toggle-title">Eventi e Cultura</div>
-          <div class="toggle-desc">Manifestazioni culturali, sagre, turismo ed iniziative locali.</div>
+          <div class="toggle-desc">Manifestazioni culturali, sagre, turismo ed iniziative del borgo.</div>
         </div>
         <label class="switch">
-          <input type="checkbox" id="toggle-evt" onchange="updateCategoryState()">
+          <input type="checkbox" id="toggle-evt" onchange="syncOneSignalTags()">
           <span class="slider"></span>
         </label>
       </div>
     </div>
 
-    <!-- Tasti Accetto Tutto & Disiscrivi -->
+    <!-- Tasti Azione -->
     <button class="btn btn-success" onclick="acceptAll()">
       ✓ Accetto Tutto
     </button>
     <button class="btn btn-outline-danger" onclick="unsubscribeAll()">
-      🔕 Disiscriviti da tutte le notifiche
+      🔕 Disiscriviti dalle notifiche
     </button>
 
-    <!-- Informativa Privacy GDPR -->
-    <div class="privacy-box">
-      <strong>Informativa sulla Privacy e Trattamento Dati (GDPR):</strong><br>
-      I dati personali (pref. notifiche, indirizzo email o identificativi dispositivo) vengono raccolti tramite moduli digitali (es. Google Moduli) e gestiti da <strong>Make.com</strong> per l'automazione dei flussi e da <strong>OneSignal</strong> per l'invio delle notifiche push web/app. I dati non saranno ceduti a terzi e verranno trattati esclusivamente per le finalità istituzionali ed informative del Comune di Toffia. Potrai modificare le tue preferenze o cancellarti in qualsiasi momento tramite questo pannello.
+    <!-- Privacy Consent Box con Flag e Link Modal -->
+    <div class="privacy-consent-container">
+      <label class="privacy-checkbox-label">
+        <input type="checkbox" id="privacy-flag" checked>
+        <span>Ho letto e accetto l'informativa sulla privacy per il trattamento dei dati personali.</span>
+      </label>
+
+      <div class="privacy-summary">
+        Il <strong>Comune di Toffia</strong> è il Titolare del Trattamento dei dati. I dati raccolti sono trattati per inviare comunicazioni di pubblica utilità ed eventi. Puoi cancellarti o modificare le tue preferenze in qualsiasi momento.
+      </div>
+
+      <button type="button" class="btn-policy-link" onclick="openPrivacyModal()">
+        📄 Leggi la Privacy Policy Completa (GDPR)
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal / Popup Informativa Privacy Completa -->
+  <div class="modal-overlay" id="privacy-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Informativa sul Trattamento dei Dati Personali (GDPR)</h3>
+        <button class="modal-close" onclick="closePrivacyModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>1. Titolare del Trattamento</h4>
+        <p>Il Titolare del trattamento dei dati è il <strong>Comune di Toffia</strong> (RI), con sede in Via Porta Maggiore, 1 - 02039 Toffia (RI), responsabile di garantire la riservatezza e la protezione dei dati personali dei propri cittadini.</p>
+
+        <h4>2. Finalità del Trattamento e Piattaforme Utilizzate</h4>
+        <p>I dati personali forniti volontariamente (indirizzi e-mail, registrazioni tramite <strong>Google Moduli</strong> o identificativi di notifica push) vengono trattati per consentire l'invio tempestivo di comunicazioni di servizio, allerta meteo, scadenze e iniziative culturali del paese.</p>
+        <p>I flussi informativi e di automazione sono gestiti in modo sicuro tramite le seguenti terze parti responsabilizzate:</p>
+        <ul>
+          <li><strong>Make.com:</strong> piattaforma di automazione digitale e orchestrazione flussi dati.</li>
+          <li><strong>OneSignal:</strong> servizio di invio notifiche push web e mobile.</li>
+          <li><strong>Google Moduli:</strong> piattaforma di raccolta delle preferenze ed iscrizioni.</li>
+        </ul>
+
+        <h4>3. Diritti dell'Utente e Disiscrizione</h4>
+        <p>In conformità al Regolamento Europeo GDPR (UE 2016/679), l'utente ha diritto di accedere, rettificare o cancellare i propri dati in qualsiasi momento.</p>
+        <p>L'iscrizione è <strong>completamente volontaria</strong>. È possibile revocare il consenso o cancellarsi autonomamente ed in qualsiasi momento cliccando sul tasto <em>"Disiscriviti dalle notifiche"</em> presente in questa pagina oppure modificando i selettori a slide.</p>
+
+        <h4>4. Conservazione e Sicurezza dei Dati</h4>
+        <p>I dati non saranno ceduti a terzi per scopi commerciali o pubblicitari e verranno conservati esclusivamente fino alla richiesta di cancellazione da parte dell'utente.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-close" onclick="closePrivacyModal()">Chiudi e Torna al Sito</button>
+      </div>
     </div>
   </div>
 
@@ -362,28 +502,33 @@ html_content = """<!DOCTYPE html>
   <script>
     const toggleIst = document.getElementById('toggle-ist');
     const toggleEvt = document.getElementById('toggle-evt');
+    const privacyFlag = document.getElementById('privacy-flag');
 
-    // Funzione OneSignal per attivare le notifiche browser
-    function subscribeOneSignal() {
+    // Richiesta Notifiche OneSignal
+    function requestOneSignalPermission() {
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.Notifications.requestPermission();
       });
     }
 
-    // Seleziona tutto
+    // Accetto Tutto
     function acceptAll() {
+      if (!privacyFlag.checked) {
+        alert("Per favore, spunta il flag di accettazione della Privacy Policy per proseguire.");
+        return;
+      }
       toggleIst.checked = true;
       toggleEvt.checked = true;
       syncOneSignalTags();
+      requestOneSignalPermission();
     }
 
-    // Deseleziona tutto / Disiscriviti
+    // Disiscriviti da Tutto
     function unsubscribeAll() {
       toggleIst.checked = false;
       toggleEvt.checked = false;
       
-      // Opt-out da OneSignal
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.User.PushSubscription.optOut();
@@ -391,13 +536,12 @@ html_content = """<!DOCTYPE html>
       alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
     }
 
-    // Aggiornamento singolo o sincronizzazione tag OneSignal
-    function updateCategoryState() {
-      syncOneSignalTags();
-    }
-
-    // Sincronizza i tag con OneSignal per segmentare gli utenti
+    // Sincronizza i Tag su OneSignal
     function syncOneSignalTags() {
+      if (!privacyFlag.checked) {
+        alert("Per modificare le preferenze, accetta prima l'informativa sulla privacy.");
+        return;
+      }
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.User.addTags({
@@ -405,6 +549,15 @@ html_content = """<!DOCTYPE html>
           "eventi": toggleEvt.checked ? "true" : "false"
         });
       });
+    }
+
+    // Modal Privacy
+    function openPrivacyModal() {
+      document.getElementById('privacy-modal').classList.add('active');
+    }
+
+    function closePrivacyModal() {
+      document.getElementById('privacy-modal').classList.remove('active');
     }
   </script>
 </body>
@@ -414,4 +567,4 @@ html_content = """<!DOCTYPE html>
 with open("index.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
-print("HTML file generated successfully!")
+print("HTML aggiornato con successo!")
