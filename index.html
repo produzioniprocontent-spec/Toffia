@@ -748,7 +748,10 @@
 
       } catch (err) {
         console.error("Dettaglio errore attivazione:", err);
-        alert("Impossibile attivare le notifiche. Assicurati che le notifiche per questo sito non siano bloccate nelle impostazioni del tuo browser.");
+        
+        // Avviso chiaro e guida passo-passo in caso di blocco del browser
+        alert("Le notifiche risultano disattivate o bloccate nel tuo browser.\n\nPer riattivarle correttamente:\n1. Clicca sull'icona del lucchetto 🔒 accanto all'indirizzo del sito\n2. Imposta 'Notifiche' su 'Consenti'\n3. Ricarica la pagina e riprova.");
+        
         setBtnPendingState();
       }
     }
