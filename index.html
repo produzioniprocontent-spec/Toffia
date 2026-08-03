@@ -670,7 +670,14 @@
       btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>`;
     }
 
-    // Salva ed Attiva Preferenze (Versione Robusta SDK v16)
+    // Salva ed Attiva Preferenze (SDK v16 - VERSIONE CORRETTA)
+    // FIX 1: nell'SDK v16 la proprietà si chiama "optedIn" (NON esiste "optedOut"),
+    //        quindi il vecchio controllo non riattivava mai la sottoscrizione.
+    // FIX 2: l'optIn() viene eseguito PRIMA di addTags(): dopo un optOut() il token
+    //        push è disabilitato e addTags() poteva restare bloccato fino al timeout,
+    //        generando il falso errore "notifiche bloccate nel browser".
+    // FIX 3: il permesso viene verificato rileggendo OneSignal.Notifications.permission,
+    //        perché requestPermission() in v16 non restituisce la stringa "denied".
     async function saveAndActivate() {
       // 1. Controllo Privacy
       if (!privacyFlag.checked) {
@@ -694,36 +701,37 @@
       btnActionText.textContent = "Aggiornamento in corso...";
 
       const processOneSignalActivation = new Promise((resolve, reject) => {
+        // Timeout ampliato: la ri-sottoscrizione dopo un optOut può richiedere qualche secondo
         const timer = setTimeout(() => {
           reject(new Error("Timeout di risposta da parte di OneSignal"));
-        }, 8000);
+        }, 15000);
 
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
           try {
-            // Controllo stato dei permessi prima dell'invio della richiesta
-            let permissionGranted = OneSignal.Notifications.permission;
-
-            if (!permissionGranted) {
-              permissionGranted = await OneSignal.Notifications.requestPermission();
+            // STEP 1: Se il permesso del browser non è ancora concesso, richiedilo.
+            if (OneSignal.Notifications.permission !== true) {
+              await OneSignal.Notifications.requestPermission();
             }
 
-            if (!permissionGranted || permissionGranted === "denied") {
+            // Rilettura dello stato reale del permesso dopo la richiesta
+            if (OneSignal.Notifications.permission !== true) {
               clearTimeout(timer);
-              reject(new Error("Permesso notifiche non concesso."));
+              reject(new Error("Permesso notifiche non concesso dal browser."));
               return;
             }
 
-            // Aggiorna le preferenze (Tags) su OneSignal
+            // STEP 2: Riattiva la sottoscrizione push su OneSignal se era in opt-out.
+            // (Va fatto PRIMA di addTags: altrimenti l'aggiornamento tag può bloccarsi)
+            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn !== true) {
+              await OneSignal.User.PushSubscription.optIn();
+            }
+
+            // STEP 3: Aggiorna le preferenze (Tags) su OneSignal
             await OneSignal.User.addTags({
               "istituzionale": toggleIst.checked ? "true" : "false",
               "eventi": toggleEvt.checked ? "true" : "false"
             });
-
-            // Se la sottoscrizione era disattivata, riabilitala (optIn)
-            if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedOut) {
-              await OneSignal.User.PushSubscription.optIn();
-            }
 
             clearTimeout(timer);
             resolve();
@@ -750,13 +758,14 @@
         console.error("Dettaglio errore attivazione:", err);
         
         // Avviso chiaro e guida passo-passo in caso di blocco del browser
-        alert("Le notifiche risultano disattivate o bloccate nel tuo browser.\n\nPer riattivarle correttamente:\n1. Clicca sull'icona del lucchetto 🔒 accanto all'indirizzo del sito\n2. Imposta 'Notifiche' su 'Consenti'\n3. Ricarica la pagina e riprova.");
+        alert("Non è stato possibile completare l'attivazione.\n\nSe le notifiche risultano bloccate nel browser:\n1. Clicca sull'icona del lucchetto 🔒 accanto all'indirizzo del sito\n2. Imposta 'Notifiche' su 'Consenti'\n3. Ricarica la pagina e riprova.\n\nSe invece il permesso è già attivo, ricarica la pagina e riprova: la sincronizzazione con OneSignal potrebbe aver impiegato troppo tempo.");
         
         setBtnPendingState();
       }
     }
 
     // Disattiva Notifiche con gestione sicura dei blocchi/timeout
+    // NOTA: aggiorna i tag PRIMA dell'optOut (dopo l'optOut la sottoscrizione è disabilitata)
     async function deactivateNotifications() {
       toggleIst.checked = false;
       toggleEvt.checked = false;
@@ -764,11 +773,11 @@
       btnDeactivateText.textContent = "Disattivazione...";
 
       const processOneSignalDeactivation = new Promise((resolve) => {
-        // Timeout di sicurezza a 3 secondi per prevenire il blocco dell'interfaccia
+        // Timeout di sicurezza per prevenire il blocco dell'interfaccia
         const timer = setTimeout(() => {
           console.warn("OneSignal timeout: disattivazione completata in locale.");
           resolve();
-        }, 3000);
+        }, 5000);
 
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
