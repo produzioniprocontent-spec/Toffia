@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comune di Toffia - Centro Notifiche</title>
   
+  <!-- Google Fonts per una tipografia moderna ed elegante -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
@@ -22,7 +27,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Roboto, sans-serif;
     }
 
     body {
@@ -31,7 +36,7 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.75)),
+      background: linear-gradient(rgba(15, 23, 42, 0.70), rgba(15, 23, 42, 0.80)),
                   url('https://images.unsplash.com/photo-1548625361-18568c075727?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
       background-size: cover;
       color: #1e293b;
@@ -46,59 +51,73 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 14px;
       margin-top: 15px;
       margin-bottom: 25px;
-      padding: 24px;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 28px 24px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       text-align: center;
     }
 
     .header-logo-container {
-      width: 85px;
-      height: 85px;
+      width: 90px;
+      height: 90px;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
-    header img {
-      width: 100%;
-      height: 100%;
+    .header-logo-container img {
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
       display: block;
     }
 
+    /* SVG Fallback integrato in modo pulito */
+    .header-logo-container .fallback-shield {
+      display: none;
+      width: 75px;
+      height: 75px;
+      color: #1e3a8a;
+    }
+
     .header-text h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
       color: #0f172a;
-      line-height: 1.35;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
     }
 
     .header-text h1 span {
       display: block;
-      font-size: 1.15rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
       font-weight: 600;
       color: #2563eb;
-      margin-top: 2px;
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     /* Main Container / Card */
     .card {
       width: 100%;
       max-width: 540px;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 26px;
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.7);
       padding: 32px 28px;
       margin-bottom: 25px;
     }
@@ -117,17 +136,18 @@
       gap: 14px;
       background: #eff6ff;
       border: 1px solid #bfdbfe;
-      border-radius: 14px;
-      padding: 14px 18px;
-      margin-bottom: 22px;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
       color: #1e40af;
-      font-size: 0.92rem;
-      line-height: 1.4;
+      font-size: 0.94rem;
+      font-weight: 500;
+      line-height: 1.45;
     }
 
     .info-banner-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       flex-shrink: 0;
       color: #2563eb;
     }
@@ -136,7 +156,7 @@
     .toggles-container {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 18px;
+      border-radius: 20px;
       padding: 18px 20px;
       margin: 20px 0;
     }
@@ -161,9 +181,9 @@
     }
 
     .toggle-icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -191,16 +211,16 @@
     }
 
     .toggle-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #0f172a;
       margin-bottom: 2px;
     }
 
     .toggle-desc {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: #64748b;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     /* Switch Style */
@@ -248,14 +268,14 @@
       transform: translateX(24px);
     }
 
-    /* Buttons con Icone Custom */
+    /* Buttons */
     .btn {
       width: 100%;
-      padding: 14px 20px;
+      padding: 15px 20px;
       border: none;
-      border-radius: 14px;
-      font-size: 0.98rem;
-      font-weight: 600;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -455,19 +475,22 @@
 
     @media (max-width: 480px) {
       body { padding: 12px; }
-      header { padding: 16px 16px; }
+      header { padding: 20px 16px; }
+      .header-text h1 { font-size: 1.45rem; }
+      .header-text h1 span { font-size: 1.15rem; }
       .card { padding: 24px 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header Banner con Logo ufficiale di Toffia -->
+  <!-- Header Banner pulito e senza codici sballati -->
   <header>
     <div class="header-logo-container">
-      <img src="logo-comune-toffia.png" 
-           alt="Logo Comune di Toffia"
-           onerror="this.outerHTML='<svg class=\"svg-icon\" style=\"width:65px; height:65px; color:#1e3a8a;\" viewBox=\"0 0 24 24\"><path d=\"M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 4a3 3 0 0 1 3 3c0 1.3-.83 2.42-2 2.83V16h-2v-4.17A3.001 3.001 0 0 1 12 6z\"/></svg>'">
+      <img id="main-logo" src="logo-comune-toffia.png" alt="Logo Comune di Toffia" onerror="showFallbackShield()">
+      <svg id="fallback-shield" class="svg-icon fallback-shield" viewBox="0 0 24 24">
+        <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 4a3 3 0 0 1 3 3c0 1.3-.83 2.42-2 2.83V16h-2v-4.17A3.001 3.001 0 0 1 12 6z"/>
+      </svg>
     </div>
     <div class="header-text">
       <h1>Comune di Toffia <span>Centro Notifiche</span></h1>
@@ -477,15 +500,15 @@
   <!-- Main Card -->
   <div class="card">
     
-    <!-- Info Banner con Icona SVG Custom -->
+    <!-- Info Banner con Testo Aggiornato -->
     <div class="info-banner">
       <svg class="svg-icon info-banner-icon" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
       </svg>
-      <div>Personalizza le notifiche qui sotto e accetta di riceverle per rimanere aggiornato.</div>
+      <div>Personalizza le notifiche qui sotto selezionando quali aggiornamenti vuoi ricevere.</div>
     </div>
 
-    <!-- Switches con Icone SVG Vettoriali Custom -->
+    <!-- Switches con Icone Vettoriali Custom -->
     <div class="toggles-container">
       
       <!-- Voce 1: Istituzionale -->
@@ -618,6 +641,11 @@
     const toggleIst = document.getElementById('toggle-ist');
     const toggleEvt = document.getElementById('toggle-evt');
     const privacyFlag = document.getElementById('privacy-flag');
+
+    function showFallbackShield() {
+      document.getElementById('main-logo').style.display = 'none';
+      document.getElementById('fallback-shield').style.display = 'block';
+    }
 
     function requestOneSignalPermission() {
       window.OneSignalDeferred = window.OneSignalDeferred || [];
