@@ -80,7 +80,7 @@
       display: block;
     }
 
-    /* SVG Fallback integrato in modo pulito */
+    /* SVG Fallback integrato */
     .header-logo-container .fallback-shield {
       display: none;
       width: 75px;
@@ -122,7 +122,6 @@
       margin-bottom: 25px;
     }
 
-    /* Custom SVG Helper */
     .svg-icon {
       display: inline-block;
       vertical-align: middle;
@@ -277,7 +276,7 @@
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -290,15 +289,26 @@
       height: 20px;
     }
 
-    .btn-success {
-      background: linear-gradient(135deg, #059669, #047857);
+    /* Stato INIZIALE Tasto: Blu senza Icona */
+    .btn-action {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-action:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-1px);
+    }
+
+    /* Stato ATTIVATO Tasto: Verde con Icona Spunta */
+    .btn-action.activated {
+      background: linear-gradient(135deg, #059669, #047857);
       box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
     }
 
-    .btn-success:hover {
+    .btn-action.activated:hover {
       background: linear-gradient(135deg, #047857, #065f46);
-      transform: translateY(-1px);
     }
 
     .btn-outline-danger {
@@ -484,7 +494,7 @@
 </head>
 <body>
 
-  <!-- Header Banner pulito e senza codici sballati -->
+  <!-- Header Banner -->
   <header>
     <div class="header-logo-container">
       <img id="main-logo" src="logo-comune-toffia.png" alt="Logo Comune di Toffia" onerror="showFallbackShield()">
@@ -500,7 +510,7 @@
   <!-- Main Card -->
   <div class="card">
     
-    <!-- Info Banner con Testo Aggiornato -->
+    <!-- Info Banner -->
     <div class="info-banner">
       <svg class="svg-icon info-banner-icon" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
@@ -508,7 +518,7 @@
       <div>Personalizza le notifiche qui sotto selezionando quali aggiornamenti vuoi ricevere.</div>
     </div>
 
-    <!-- Switches con Icone Vettoriali Custom -->
+    <!-- Switches -->
     <div class="toggles-container">
       
       <!-- Voce 1: Istituzionale -->
@@ -552,11 +562,10 @@
     </div>
 
     <!-- Action Buttons -->
-    <button class="btn btn-success" onclick="acceptAll()">
-      <svg class="svg-icon" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-      </svg>
-      Accetto Tutto
+    <!-- Tasto dinamico: parte Blu senza icona, diventa Verde con icona al click -->
+    <button id="btn-accept" class="btn btn-action" onclick="acceptAll()">
+      <span id="btn-icon-container"></span>
+      <span id="btn-text">Accetto Tutto</span>
     </button>
     
     <button class="btn btn-outline-danger" onclick="unsubscribeAll()">
@@ -641,6 +650,9 @@
     const toggleIst = document.getElementById('toggle-ist');
     const toggleEvt = document.getElementById('toggle-evt');
     const privacyFlag = document.getElementById('privacy-flag');
+    const btnAccept = document.getElementById('btn-accept');
+    const btnText = document.getElementById('btn-text');
+    const btnIconContainer = document.getElementById('btn-icon-container');
 
     function showFallbackShield() {
       document.getElementById('main-logo').style.display = 'none';
@@ -654,6 +666,18 @@
       });
     }
 
+    function setBtnActivatedState() {
+      btnAccept.classList.add('activated');
+      btnText.textContent = "Notifiche attivate";
+      btnIconContainer.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    }
+
+    function setBtnInitialState() {
+      btnAccept.classList.remove('activated');
+      btnText.textContent = "Accetto Tutto";
+      btnIconContainer.innerHTML = "";
+    }
+
     function acceptAll() {
       if (!privacyFlag.checked) {
         alert("Per favore, spunta il flag di accettazione della Privacy Policy per proseguire.");
@@ -663,6 +687,7 @@
       toggleEvt.checked = true;
       syncOneSignalTags();
       requestOneSignalPermission();
+      setBtnActivatedState();
     }
 
     function unsubscribeAll() {
@@ -673,6 +698,7 @@
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.User.PushSubscription.optOut();
       });
+      setBtnInitialState();
       alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
     }
 
