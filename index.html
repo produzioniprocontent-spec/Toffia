@@ -1,342 +1,417 @@
-<!DOCTYPE html>
+import weasyprint
+
+html_content = """<!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Notifiche Toffia</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comune di Toffia - Centro Notifiche</title>
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "bb1e9ba5-eee7-4d95-b674-c3c670842374",
+      });
+    });
+  </script>
+  <style>
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
 
-    <!-- 1. SCRIPT SDK ONESIGNAL (Il tuo ID è già inserito) -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(async function(OneSignal) {
-            await OneSignal.init({
-                appId: "bb1e9ba5-eee7-4d95-b674-c3c670842374",
-                safari_web_id: "web.onesignal.auto.19a42a42-bb44-4f4d-b94d-16a707963d41", // Aggiungi se necessario per Safari
-                notifyButton: {
-                    enable: false, // Disabilitiamo il pulsante predefinito
-                },
-            });
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.75)),
+                  url('https://images.unsplash.com/photo-1548625361-18568c075727?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: #1e293b;
+      padding: 20px;
+    }
 
-            // Controlla lo stato iniziale dell'iscrizione al caricamento
-            checkSubscriptionStatus();
-        });
-    </script>
+    /* Header Section */
+    header {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 15px;
+      margin-bottom: 25px;
+      padding: 16px 24px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
 
-    <!-- 2. STILI CSS (Design Ergonomico) -->
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --danger-color: #dc3545;
-            --success-color: #28a745;
-            --bg-color: #f4f7f6;
-            --text-color: #333;
-            --border-radius: 20px; /* Bordi molto stondati */
-        }
+    header img {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+    .header-text {
+      text-align: left;
+    }
 
-        .notification-box {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); /* Ombretta morbida e profonda */
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
+    .header-text h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
 
-        .notification-box:hover {
-            transform: translateY(-5px); /* Effetto hover leggero */
-        }
+    .header-text h2 {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: #2563eb;
+      margin-top: 2px;
+    }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
+    /* Main Container / Card */
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 32px 28px;
+      margin-bottom: 25px;
+    }
 
-        p.description {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 15px;
-        }
+    .card-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+      text-align: center;
+    }
 
-        /* Stili per i selettori a slide (Switch) */
-        .switch-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            text-align: left;
-        }
+    .card-subtitle {
+      font-size: 0.92rem;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
 
-        .switch-label {
-            font-weight: 600;
-            font-size: 16px;
-        }
+    /* Action Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
 
-        .switch-description {
-            display: block;
-            font-weight: normal;
-            font-size: 13px;
-            color: #888;
-        }
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
 
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+    }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+    }
 
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #047857, #065f46);
+      transform: translateY(-1px);
+    }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+    .btn-outline-danger {
+      background: transparent;
+      color: #dc2626;
+      border: 1.5px solid #fca5a5;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
 
-        input:checked + .slider {
-            background-color: var(--success-color);
-        }
+    .btn-outline-danger:hover {
+      background: #fef2f2;
+      border-color: #ef4444;
+    }
 
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--success-color);
-        }
+    /* Section Divider / Toggles Container */
+    .toggles-container {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
 
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      gap: 16px;
+    }
 
-        /* Stili per i pulsanti */
-        .btn {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 50px; /* Pulsanti a pillola */
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-            margin-top: 15px;
-        }
+    .toggle-row:not(:last-child) {
+      border-bottom: 1px solid #e2e8f0;
+    }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
+    .toggle-info {
+      flex: 1;
+    }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
+    .toggle-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+    .toggle-desc {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
 
-        .btn-danger {
-            background-color: transparent;
-            color: var(--danger-color);
-            border: 2px solid var(--danger-color);
-            margin-top: 25px;
-        }
+    /* Switch Style */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+      flex-shrink: 0;
+    }
 
-        .btn-danger:hover {
-            background-color: #fff5f5;
-        }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
 
-        .btn:disabled {
-            background-color: #ccc;
-            border-color: #ccc;
-            color: #666;
-            cursor: not-allowed;
-        }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 34px;
+    }
 
-        /* Messaggio di stato */
-        #status-message {
-            margin-top: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-    </style>
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+      background-color: #2563eb;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    /* Privacy & Legal Section */
+    .privacy-box {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+      text-align: justify;
+    }
+
+    .privacy-box strong {
+      color: #334155;
+    }
+
+    .privacy-link {
+      color: #2563eb;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* Footer */
+    footer {
+      color: #f8fafc;
+      font-size: 0.8rem;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      margin-bottom: 10px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+      header {
+        padding: 12px 16px;
+      }
+      .card {
+        padding: 24px 18px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="notification-box">
-        <h1>Centro Notifiche Toffia</h1>
-        <p class="description">Rimani aggiornato sulle novità che ti interessano. Gestisci le tue preferenze qui sotto.</p>
+  <!-- Header -->
+  <header>
+    <!-- Logo fallback se il file logo-comune-toffia.png non è ancora stato caricato -->
+    <img src="logo-comune-toffia.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Italian_comune_coat_of_arms_template.svg/100px-Italian_comune_coat_of_arms_template.svg.png'" alt="Logo Comune di Toffia">
+    <div class="header-text">
+      <h1>Comune di Toffia</h1>
+      <h2>Centro Notifiche</h2>
+    </div>
+  </header>
 
-        <!-- Selettori Slide -->
-        <div class="switch-container">
-            <span class="switch-label">
-                Istituzionali e Servizio
-                <span class="switch-description">Comunicazioni ufficiali e avvisi di servizio.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="slide-istituzionali">
-                <span class="slider"></span>
-            </label>
+  <!-- Main Card Container -->
+  <div class="card">
+    <h3 class="card-title">Benvenuto nel Servizio Notifiche</h3>
+    <p class="card-subtitle">Personalizza le tue preferenze per rimanere tempestivamente aggiornato sulle novità istituzionali e gli eventi del borgo.</p>
+
+    <!-- Bottone Richiesta Notifiche Web Push (OneSignal) -->
+    <button class="btn btn-primary" id="btn-subscribe-onesignal" onclick="subscribeOneSignal()">
+      🔔 Accetta di ricevere le notifiche
+    </button>
+
+    <!-- Selettori Notifiche (Switches) -->
+    <div class="toggles-container">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Comunicazioni Istituzionali e Servizi</div>
+          <div class="toggle-desc">Avvisi comunali, ordinanze, allerta meteo e scadenze dei servizi.</div>
         </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-ist" onchange="updateCategoryState()">
+          <span class="slider"></span>
+        </label>
+      </div>
 
-        <div class="switch-container">
-            <span class="switch-label">
-                Eventi e Cultura
-                <span class="switch-description">Notizie su eventi, mostre e iniziative locali.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="slide-eventi">
-                <span class="slider"></span>
-            </label>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Eventi e Cultura</div>
+          <div class="toggle-desc">Manifestazioni culturali, sagre, turismo ed iniziative locali.</div>
         </div>
-
-        <!-- Pulsanti Principali -->
-        <button id="btn-accetta-tutto" class="btn btn-primary">✅ Accetta Tutto</button>
-        <button id="btn-salva-preferenze" class="btn btn-success" style="display:none; background-color: var(--success-color); color: white;">Salva Preferenze</button>
-        <button id="btn-disiscriviti" class="btn btn-danger">Disiscriviti dalle Notifiche</button>
-
-        <p id="status-message"></p>
+        <label class="switch">
+          <input type="checkbox" id="toggle-evt" onchange="updateCategoryState()">
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
-    <!-- 3. LOGICA JAVASCRIPT -->
-    <script>
-        // Riferimenti agli elementi DOM
-        const slideIstituzionali = document.getElementById('slide-istituzionali');
-        const slideEventi = document.getElementById('slide-eventi');
-        const btnAccettaTutto = document.getElementById('btn-accetta-tutto');
-        const btnSalvaPreferenze = document.getElementById('btn-salva-preferenze');
-        const btnDisiscriviti = document.getElementById('btn-disiscriviti');
-        const statusMessage = document.getElementById('status-message');
+    <!-- Tasti Accetto Tutto & Disiscrivi -->
+    <button class="btn btn-success" onclick="acceptAll()">
+      ✓ Accetto Tutto
+    </button>
+    <button class="btn btn-outline-danger" onclick="unsubscribeAll()">
+      🔕 Disiscriviti da tutte le notifiche
+    </button>
 
-        // Funzione per mostrare messaggi di stato
-        function showStatus(message, type = 'info') {
-            statusMessage.textContent = message;
-            statusMessage.style.color = type === 'error' ? 'var(--danger-color)' : (type === 'success' ? 'var(--success-color)' : 'var(--text-color)');
-        }
+    <!-- Informativa Privacy GDPR -->
+    <div class="privacy-box">
+      <strong>Informativa sulla Privacy e Trattamento Dati (GDPR):</strong><br>
+      I dati personali (pref. notifiche, indirizzo email o identificativi dispositivo) vengono raccolti tramite moduli digitali (es. Google Moduli) e gestiti da <strong>Make.com</strong> per l'automazione dei flussi e da <strong>OneSignal</strong> per l'invio delle notifiche push web/app. I dati non saranno ceduti a terzi e verranno trattati esclusivamente per le finalità istituzionali ed informative del Comune di Toffia. Potrai modificare le tue preferenze o cancellarti in qualsiasi momento tramite questo pannello.
+    </div>
+  </div>
 
-        // Funzione per controllare e aggiornare l'interfaccia in base all'iscrizione OneSignal
-        async function checkSubscriptionStatus() {
-            OneSignalDeferred.push(async function(OneSignal) {
-                const isSubscribed = await OneSignal.User.PushSubscription.id;
-                
-                if (isSubscribed) {
-                    btnAccettaTutto.style.display = 'none';
-                    btnSalvaPreferenze.style.display = 'block';
-                    btnDisiscriviti.disabled = false;
-                    
-                    // Recupera i tag esistenti per impostare gli slide
-                    const tags = await OneSignal.User.getTags();
-                    if (tags) {
-                        slideIstituzionali.checked = tags['istituzionali'] === 'true';
-                        slideEventi.checked = tags['eventi'] === 'true';
-                    }
-                    showStatus('Sei iscritto alle notifiche.', 'success');
-                } else {
-                    btnAccettaTutto.style.display = 'block';
-                    btnSalvaPreferenze.style.display = 'none';
-                    btnDisiscriviti.disabled = true;
-                    // Reset slide
-                    slideIstituzionali.checked = false;
-                    slideEventi.checked = false;
-                    showStatus('Non sei ancora iscritto.');
-                }
-            });
-        }
+  <!-- Footer -->
+  <footer>
+    &copy; 2026 Comune di Toffia — Servizi Digitali al Cittadino
+  </footer>
 
-        // --- Gestione Eventi ---
+  <!-- Script di Gestione Interattività -->
+  <script>
+    const toggleIst = document.getElementById('toggle-ist');
+    const toggleEvt = document.getElementById('toggle-evt');
 
-        // 1. Pulsante "Accetta Tutto"
-        btnAccettaTutto.addEventListener('click', () => {
-            // Logica Visiva
-            slideIstituzionali.checked = true;
-            slideEventi.checked = true;
+    // Funzione OneSignal per attivare le notifiche browser
+    function subscribeOneSignal() {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.Notifications.requestPermission();
+      });
+    }
 
-            // Logica OneSignal: Iscrizione + Invio Tag
-            OneSignalDeferred.push(async function(OneSignal) {
-                try {
-                    await OneSignal.Slidedown.promptPush(); // Mostra il prompt nativo del browser
-                    // Nota: L'invio dei tag dovrebbe avvenire dopo che l'utente ha accettato nel prompt nativo.
-                    // OneSignal gestisce l'iscrizione. I tag verranno inviati al successivo salvataggio o se gestisci l'evento di iscrizione.
-                    // Per semplicità qui simuliamo l'invio dei tag "tutto" dopo il prompt.
-                    await OneSignal.User.addTags({
-                        istituzionali: 'true',
-                        eventi: 'true'
-                    });
-                    checkSubscriptionStatus(); // Aggiorna l'interfaccia
-                } catch (error) {
-                    console.error("Errore durante l'iscrizione:", error);
-                    showStatus('Si è verificato un errore durante l\'iscrizione.', 'error');
-                }
-            });
+    // Seleziona tutto
+    function acceptAll() {
+      toggleIst.checked = true;
+      toggleEvt.checked = true;
+      syncOneSignalTags();
+    }
+
+    // Deseleziona tutto / Disiscriviti
+    function unsubscribeAll() {
+      toggleIst.checked = false;
+      toggleEvt.checked = false;
+      
+      // Opt-out da OneSignal
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.User.PushSubscription.optOut();
+      });
+      alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
+    }
+
+    // Aggiornamento singolo o sincronizzazione tag OneSignal
+    function updateCategoryState() {
+      syncOneSignalTags();
+    }
+
+    // Sincronizza i tag con OneSignal per segmentare gli utenti
+    function syncOneSignalTags() {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.User.addTags({
+          "istituzionale": toggleIst.checked ? "true" : "false",
+          "eventi": toggleEvt.checked ? "true" : "false"
         });
-
-        // 2. Pulsante "Salva Preferenze" (visibile solo se già iscritto)
-        btnSalvaPreferenze.addEventListener('click', () => {
-            const tags = {
-                istituzionali: slideIstituzionali.checked.toString(),
-                eventi: slideEventi.checked.toString()
-            };
-
-            OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.User.addTags(tags);
-                showStatus('Preferenze salvate con successo!', 'success');
-                // Nascondi il messaggio dopo qualche secondo
-                setTimeout(() => showStatus('Sei iscritto alle notifiche.', 'success'), 3000);
-            });
-        });
-
-        // 3. Pulsante "Disiscriviti"
-        btnDisiscriviti.addEventListener('click', () => {
-            // Logica Visiva
-            slideIstituzionali.checked = false;
-            slideEventi.checked = false;
-
-            // Logica OneSignal: Disiscrizione
-            OneSignalDeferred.push(async function(OneSignal) {
-                try {
-                    await OneSignal.User.PushSubscription.optOut();
-                    // Opzionalmente rimuovi i tag
-                    await OneSignal.User.removeTags(['istituzionali', 'eventi']);
-                    checkSubscriptionStatus(); // Aggiorna l'interfaccia
-                    showStatus('Ti sei disiscritto correttamente.');
-                } catch (error) {
-                    console.error("Errore durante la disiscrizione:", error);
-                    showStatus('Si è verificato un errore durante la disiscrizione.', 'error');
-                }
-            });
-        });
-    </script>
+      });
+    }
+  </script>
 </body>
 </html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("HTML file generated successfully!")
