@@ -568,7 +568,7 @@
       </div>
       <div class="modal-body">
         <h4>1. Titolare del Trattamento</h4>
-        <p>Il Titolare del Trattamento dei dati personali è il <strong>Comune di Toffia</strong> (RI), con sede legali in Via Porta Maggiore, 1 - 02039 Toffia (RI). Email: <code>protocollo@comune.toffia.ri.it</code>.</p>
+        <p>Il Titolare del Trattamento dei dati personali è il <strong>Comune di Toffia</strong> (RI), con sede legale in Via Porta Maggiore, 1 - 02039 Toffia (RI). Email: <code>protocollo@comune.toffia.ri.it</code>.</p>
 
         <h4>2. Tipologia di Dati Trattati</h4>
         <p>Il servizio <strong>non richiede e non raccoglie dati anagrafici</strong>. Vengono trattati unicamente dati tecnici pseudonimizzati (Push Token) gestiti per l'invio degli avvisi scelti.</p>
@@ -670,7 +670,7 @@
       btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>`;
     }
 
-    // Salva ed Attiva Preferenze (ASINCRONO con OneSignal e Timeout)
+    // Salva ed Attiva Preferenze (Versione Robusta SDK v16)
     async function saveAndActivate() {
       // 1. Controllo Privacy
       if (!privacyFlag.checked) {
@@ -684,25 +684,47 @@
         return;
       }
 
+      // Check preventivo HTTPS
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        alert("Le notifiche Web Push richiedono una connessione sicura HTTPS per funzionare.");
+        return;
+      }
+
       // Stato temporaneo di caricamento
       btnActionText.textContent = "Aggiornamento in corso...";
 
       const processOneSignalActivation = new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
-          reject(new Error("Timeout risposta OneSignal"));
-        }, 5000);
+          reject(new Error("Timeout di risposta da parte di OneSignal"));
+        }, 8000);
 
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
           try {
-            await OneSignal.Notifications.requestPermission();
+            // Controllo stato dei permessi prima dell'invio della richiesta
+            let permissionGranted = OneSignal.Notifications.permission;
+
+            if (!permissionGranted) {
+              permissionGranted = await OneSignal.Notifications.requestPermission();
+            }
+
+            if (!permissionGranted || permissionGranted === "denied") {
+              clearTimeout(timer);
+              reject(new Error("Permesso notifiche non concesso."));
+              return;
+            }
+
+            // Aggiorna le preferenze (Tags) su OneSignal
             await OneSignal.User.addTags({
               "istituzionale": toggleIst.checked ? "true" : "false",
               "eventi": toggleEvt.checked ? "true" : "false"
             });
+
+            // Se la sottoscrizione era disattivata, riabilitala (optIn)
             if (OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedOut) {
               await OneSignal.User.PushSubscription.optIn();
             }
+
             clearTimeout(timer);
             resolve();
           } catch (err) {
@@ -715,7 +737,7 @@
       try {
         await processOneSignalActivation;
 
-        // SOLO DOPO l'esito positivo di OneSignal salviamo e diventiamo VERDE
+        // Salva stato locale e attiva pulsante VERDE
         localStorage.setItem('toffia_notif_ist', toggleIst.checked);
         localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
         localStorage.setItem('toffia_notif_activated', 'true');
@@ -725,8 +747,8 @@
         resetBtnDeactivateStyle();
 
       } catch (err) {
-        console.error("Errore durante l'aggiornamento OneSignal:", err);
-        alert("Impossibile aggiornare le preferenze. Assicurati di aver consentito le notifiche nel tuo browser.");
+        console.error("Dettaglio errore attivazione:", err);
+        alert("Impossibile attivare le notifiche. Assicurati che le notifiche per questo sito non siano bloccate nelle impostazioni del tuo browser.");
         setBtnPendingState();
       }
     }
@@ -739,7 +761,7 @@
       btnDeactivateText.textContent = "Disattivazione...";
 
       const processOneSignalDeactivation = new Promise((resolve) => {
-        // Timeout di sicurezza di 3 secondi per evitare blocchi dell'interfaccia
+        // Timeout di sicurezza a 3 secondi per prevenire il blocco dell'interfaccia
         const timer = setTimeout(() => {
           console.warn("OneSignal timeout: disattivazione completata in locale.");
           resolve();
@@ -772,7 +794,7 @@
       } catch (err) {
         console.error("Errore durante la disattivazione:", err);
       } finally {
-        // Aggiorna SEMPRE il localStorage e l'interfaccia visiva
+        // Aggiorna SEMPRE il localStorage ed il pulsante in ROSSO
         localStorage.setItem('toffia_notif_ist', 'false');
         localStorage.setItem('toffia_notif_evt', 'false');
         localStorage.setItem('toffia_notif_activated', 'false');
