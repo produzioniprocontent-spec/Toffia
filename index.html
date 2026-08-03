@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- OneSignal SDK -->
+  <!-- OneSignal SDK v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -58,7 +58,7 @@
       margin-bottom: 25px;
     }
 
-    /* Header integrato nel box */
+    /* Header Section */
     .header-section {
       display: flex;
       flex-direction: column;
@@ -100,7 +100,6 @@
       letter-spacing: -0.02em;
     }
 
-    /* Scritta Centro Notifiche: Grigio e sottile */
     .header-text h1 span {
       display: block;
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -112,7 +111,7 @@
       text-transform: none;
     }
 
-    /* Linea divisoria tra Header e Corpo */
+    /* Linea divisoria */
     .divider {
       width: 100%;
       height: 1px;
@@ -188,24 +187,15 @@
       margin-top: 2px;
     }
 
-    .toggle-icon-box.ist {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .toggle-icon-box.evt {
-      background: #f3e8ff;
-      color: #7e22ce;
-    }
+    .toggle-icon-box.ist { background: #dbeafe; color: #1d4ed8; }
+    .toggle-icon-box.evt { background: #f3e8ff; color: #7e22ce; }
 
     .toggle-icon-box svg {
       width: 22px;
       height: 22px;
     }
 
-    .toggle-info {
-      flex: 1;
-    }
+    .toggle-info { flex: 1; }
 
     .toggle-title {
       font-size: 0.98rem;
@@ -229,11 +219,7 @@
       flex-shrink: 0;
     }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    .switch input { opacity: 0; width: 0; height: 0; }
 
     .slider {
       position: absolute;
@@ -247,25 +233,18 @@
     .slider:before {
       position: absolute;
       content: "";
-      height: 22px;
-      width: 22px;
-      left: 3px;
-      bottom: 3px;
+      height: 22px; width: 22px;
+      left: 3px; bottom: 3px;
       background-color: white;
       transition: .3s;
       border-radius: 50%;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    input:checked + .slider {
-      background-color: #2563eb;
-    }
+    input:checked + .slider { background-color: #2563eb; }
+    input:checked + .slider:before { transform: translateX(24px); }
 
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
-
-    /* Buttons General */
+    /* Buttons */
     .btn {
       width: 100%;
       padding: 15px 20px;
@@ -282,12 +261,9 @@
       margin-bottom: 12px;
     }
 
-    .btn svg {
-      width: 20px;
-      height: 20px;
-    }
+    .btn svg { width: 20px; height: 20px; }
 
-    /* Tasto Attiva Notifiche (Blu / Verde) */
+    /* Tasto Attiva (Blu) */
     .btn-action {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -299,6 +275,7 @@
       transform: translateY(-1px);
     }
 
+    /* Tasto Attivato (Verde) */
     .btn-action.activated {
       background: linear-gradient(135deg, #059669, #047857);
       box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
@@ -308,7 +285,7 @@
       background: linear-gradient(135deg, #047857, #065f46);
     }
 
-    /* Tasto Disattiva Notifiche (Inizialmente Grigio) */
+    /* Tasto Disattiva (Grigio) */
     .btn-deactivate {
       background: #f1f5f9;
       color: #64748b;
@@ -322,7 +299,7 @@
       color: #475569;
     }
 
-    /* Tasto Disattiva Notifiche (Stato Cliccato: Rosso) */
+    /* Tasto Disattivato (Rosso) */
     .btn-deactivate.deactivated {
       background: linear-gradient(135deg, #dc2626, #b91c1c);
       color: #ffffff;
@@ -353,8 +330,7 @@
 
     .privacy-checkbox-label input[type="checkbox"] {
       margin-top: 3px;
-      width: 17px;
-      height: 17px;
+      width: 17px; height: 17px;
       accent-color: #2563eb;
       cursor: pointer;
     }
@@ -380,23 +356,14 @@
       gap: 6px;
     }
 
-    .btn-policy-link svg {
-      width: 16px;
-      height: 16px;
-    }
+    .btn-policy-link svg { width: 16px; height: 16px; }
+    .btn-policy-link:hover { color: #1d4ed8; text-decoration: underline; }
 
-    .btn-policy-link:hover {
-      color: #1d4ed8;
-      text-decoration: underline;
-    }
-
-    /* Modal / Popup Privacy */
+    /* Modal Privacy */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
       display: flex;
@@ -409,10 +376,7 @@
       transition: all 0.3s ease;
     }
 
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
 
     .modal-content {
       background: #ffffff;
@@ -435,10 +399,7 @@
       justify-content: space-between;
     }
 
-    .modal-header h3 {
-      font-size: 1.05rem;
-      color: #0f172a;
-    }
+    .modal-header h3 { font-size: 1.05rem; color: #0f172a; }
 
     .modal-close {
       background: none;
@@ -456,17 +417,8 @@
       line-height: 1.6;
     }
 
-    .modal-body h4 {
-      margin-top: 14px;
-      margin-bottom: 6px;
-      color: #0f172a;
-      font-size: 0.92rem;
-    }
-
-    .modal-body ul {
-      margin-left: 20px;
-      margin-bottom: 10px;
-    }
+    .modal-body h4 { margin-top: 14px; margin-bottom: 6px; color: #0f172a; font-size: 0.92rem; }
+    .modal-body ul { margin-left: 20px; margin-bottom: 10px; }
 
     .modal-footer {
       padding: 16px 24px;
@@ -503,7 +455,7 @@
 </head>
 <body>
 
-  <!-- Single Unified Card (Header + Body) -->
+  <!-- Single Box (Header + Body) -->
   <div class="card">
     
     <!-- Header Section -->
@@ -519,7 +471,6 @@
       </div>
     </div>
 
-    <!-- Linea divisoria tra Header e Corpo -->
     <div class="divider"></div>
 
     <!-- Info Banner -->
@@ -617,34 +568,19 @@
       </div>
       <div class="modal-body">
         <h4>1. Titolare del Trattamento</h4>
-        <p>Il Titolare del Trattamento dei dati personali è il <strong>Comune di Toffia</strong> (RI), con sede legali in Via Porta Maggiore, 1 - 02039 Toffia (RI). Email di contatto istituzionale: <code>protocollo@comune.toffia.ri.it</code>.</p>
+        <p>Il Titolare del Trattamento dei dati personali è il <strong>Comune di Toffia</strong> (RI), con sede legali in Via Porta Maggiore, 1 - 02039 Toffia (RI). Email: <code>protocollo@comune.toffia.ri.it</code>.</p>
 
-        <h4>2. Tipologia di Dati Trattati e Principio di Minimizzazione</h4>
-        <p>Il servizio <strong>non richiede e non raccoglie dati anagrafici o identificativi diretti</strong> dell'utente (quali nome, cognome, numero di telefono o indirizzo e-mail).</p>
-        <p>Ai soli fini tecnici necessari all'erogazione delle notifiche push sul browser o dispositivo dell'utente, vengono trattati esclusivamente dati pseudonimizzati:</p>
-        <ul>
-          <li><strong>Push Token / Identificativo di Sottoscrizione:</strong> un codice alfanumerico univoco generato automaticamente dal browser.</li>
-          <li><strong>Tag delle Preferenze:</strong> le selezioni effettuate dall'utente (es. <em>"istituzionale"</em>, <em>"eventi"</em>).</li>
-          <li><strong>Dati Tecnici di Connessione:</strong> indirizzo IP e dati di sistema gestiti per ragioni di sicurezza della trasmissione.</li>
-        </ul>
+        <h4>2. Tipologia di Dati Trattati</h4>
+        <p>Il servizio <strong>non richiede e non raccoglie dati anagrafici</strong>. Vengono trattati unicamente dati tecnici pseudonimizzati (Push Token) gestiti per l'invio degli avvisi scelti.</p>
 
-        <h4>3. Base Giuridica e Finalità del Trattamento</h4>
-        <p>I dati tecnici sono trattati per le seguenti finalità:</p>
-        <ul>
-          <li>Inviare comunicazioni di pubblica utilità, avvisi istituzionali, allerta meteo, variazioni di servizi e promozioni culturali. (Base giuridica: <em>Consenso dell'interessato - Art. 6, par. 1, lett. a GDPR</em> ed <em>Esecuzione di compiti di interesse pubblico - Art. 6, par. 1, lett. e GDPR</em>).</li>
-        </ul>
+        <h4>3. Base Giuridica</h4>
+        <p>Consenso dell'interessato (Art. 6 par. 1 lett. a GDPR) ed esecuzione di compiti di pubblico interesse (Art. 6 par. 1 lett. e GDPR).</p>
 
-        <h4>4. Fornitori Tecnici e Responsabili del Trattamento</h4>
-        <p>Il servizio di gestione ed erogazione tecnica delle notifiche è affidato alla piattaforma terzi <strong>OneSignal, Inc.</strong>, che agisce in qualità di Responsabile del Trattamento ai sensi dell'Art. 28 GDPR.</p>
-
-        <h4>5. Periodo di Conservazione dei Dati</h4>
-        <p>I dati pseudonimizzati rimangono attivi fino a quando l'utente sceglie spontaneamente di revocare il proprio consenso o disiscriversi dal servizio.</p>
-
-        <h4>6. Diritti dell'Interessato e Revoca del Consenso</h4>
-        <p>In conformità agli articoli 15 e ss. del GDPR, l'interessato ha il diritto di revocare il consenso ed eliminare i propri dati in qualsiasi momento tramite il pulsante "Disattiva Notifiche".</p>
+        <h4>4. Gestione delle Preferenze</h4>
+        <p>È possibile cancellarsi o variare i tipi di notifiche ricevute in qualsiasi momento tramite questo modulo.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-close" onclick="closePrivacyModal()">Chiudi e Torna al Sito</button>
+        <button class="btn-modal-close" onclick="closePrivacyModal()">Chiudi</button>
       </div>
     </div>
   </div>
@@ -691,7 +627,7 @@
 
       if (isDeactivated === 'true') {
         setBtnDeactivatedState();
-      } else if (isActivated === 'true') {
+      } else if (isActivated === 'true' && (toggleIst.checked || toggleEvt.checked)) {
         setBtnActivatedState();
         resetBtnDeactivateStyle();
       } else {
@@ -700,7 +636,7 @@
       }
     }
 
-    // Cambio selettori manuale
+    // Gestore del cambio manuale di uno switch
     function handleSelectionChange() {
       setBtnPendingState();
       resetBtnDeactivateStyle();
@@ -713,10 +649,10 @@
       btnActionIcon.innerHTML = "";
     }
 
-    // Tasto Attiva -> Verde ("Notifiche Attivate")
+    // Tasto Attiva -> Verde ("Notifiche Attivabile")
     function setBtnActivatedState() {
       btnAction.classList.add('activated');
-      btnActionText.textContent = "Notifiche Attivate";
+      btnActionText.textContent = "Notifiche Attive";
       btnActionIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
     }
 
@@ -734,48 +670,88 @@
       btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>`;
     }
 
-    // Salva ed Attiva Preferenze
-    function saveAndActivate() {
+    // Salva ed Attiva Preferenze (ASINCRONO con OneSignal)
+    async function saveAndActivate() {
+      // 1. Controllo Privacy
       if (!privacyFlag.checked) {
-        alert("Per favore, spunta il flag di accettazione della Privacy Policy per proseguire.");
+        alert("Per favore, accetta l'Informativa sulla Privacy per poter attivare il servizio.");
         return;
       }
 
-      localStorage.setItem('toffia_notif_ist', toggleIst.checked);
-      localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
-      localStorage.setItem('toffia_notif_activated', 'true');
-      localStorage.setItem('toffia_notif_deactivated', 'false');
+      // 2. Controllo: ALMENO UN SELETTORE DEVE ESSERE ATTIVO
+      if (!toggleIst.checked && !toggleEvt.checked) {
+        alert("Seleziona almeno un tipo di notifica (Istituzionale o Eventi) per procedere all'attivazione.");
+        return;
+      }
 
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission();
-        OneSignal.User.addTags({
-          "istituzionale": toggleIst.checked ? "true" : "false",
-          "eventi": toggleEvt.checked ? "true" : "false"
+      // Stato temporaneo di caricamento
+      btnActionText.textContent = "Aggiornamento in corso...";
+
+      try {
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        await new Promise((resolve) => {
+          OneSignalDeferred.push(async function(OneSignal) {
+            // Richiede permessi al browser (se non ancora concessi)
+            await OneSignal.Notifications.requestPermission();
+            
+            // Invia i Tag aggiornati delle preferenze dell'utente
+            await OneSignal.User.addTags({
+              "istituzionale": toggleIst.checked ? "true" : "false",
+              "eventi": toggleEvt.checked ? "true" : "false"
+            });
+            
+            // Se precedentemente opt-out, riattiva le push
+            if (OneSignal.User.PushSubscription.optedOut) {
+              await OneSignal.User.PushSubscription.optIn();
+            }
+            resolve();
+          });
         });
-      });
 
-      setBtnActivatedState();
-      resetBtnDeactivateStyle();
+        // 3. SOLO DOPO l'esito positivo di OneSignal salviamo e diventiamo VERDE
+        localStorage.setItem('toffia_notif_ist', toggleIst.checked);
+        localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
+        localStorage.setItem('toffia_notif_activated', 'true');
+        localStorage.setItem('toffia_notif_deactivated', 'false');
+
+        setBtnActivatedState();
+        resetBtnDeactivateStyle();
+
+      } catch (err) {
+        console.error("Errore durante l'aggiornamento OneSignal:", err);
+        alert("Impossibile aggiornare le preferenze. Assicurati di aver consentito le notifiche nel tuo browser.");
+        setBtnPendingState();
+      }
     }
 
-    // Disattiva Notifiche (Click sul tasto grigio che diventa rosso)
-    function deactivateNotifications() {
+    // Disattiva Notifiche (Click sul tasto grigio)
+    async function deactivateNotifications() {
       toggleIst.checked = false;
       toggleEvt.checked = false;
 
-      localStorage.setItem('toffia_notif_ist', 'false');
-      localStorage.setItem('toffia_notif_evt', 'false');
-      localStorage.setItem('toffia_notif_activated', 'false');
-      localStorage.setItem('toffia_notif_deactivated', 'true');
+      btnDeactivateText.textContent = "Disattivazione...";
 
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.User.PushSubscription.optOut();
-      });
+      try {
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        await new Promise((resolve) => {
+          OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.User.PushSubscription.optOut();
+            resolve();
+          });
+        });
 
-      setBtnPendingState();
-      setBtnDeactivatedState();
+        localStorage.setItem('toffia_notif_ist', 'false');
+        localStorage.setItem('toffia_notif_evt', 'false');
+        localStorage.setItem('toffia_notif_activated', 'false');
+        localStorage.setItem('toffia_notif_deactivated', 'true');
+
+        setBtnPendingState();
+        setBtnDeactivatedState();
+
+      } catch (err) {
+        console.error("Errore durante la disattivazione:", err);
+        resetBtnDeactivateStyle();
+      }
     }
 
     function openPrivacyModal() {
