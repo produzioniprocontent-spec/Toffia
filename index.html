@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comune di Toffia - Centro Notifiche</title>
   
-  <!-- Google Fonts per una tipografia moderna ed elegante -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -80,7 +80,7 @@
       display: block;
     }
 
-    /* SVG Fallback integrato */
+    /* SVG Fallback */
     .header-logo-container .fallback-shield {
       display: none;
       width: 75px;
@@ -289,7 +289,7 @@
       height: 20px;
     }
 
-    /* Stato INIZIALE Tasto: Blu senza Icona */
+    /* Tasto da cliccare / modifiche pendenti: Blu senza Icona */
     .btn-action {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -301,7 +301,7 @@
       transform: translateY(-1px);
     }
 
-    /* Stato ATTIVATO Tasto: Verde con Icona Spunta */
+    /* Stato ATTIVATO e Salvato: Verde con Spunta */
     .btn-action.activated {
       background: linear-gradient(135deg, #059669, #047857);
       box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
@@ -535,7 +535,7 @@
           </div>
         </div>
         <label class="switch">
-          <input type="checkbox" id="toggle-ist" onchange="syncOneSignalTags()">
+          <input type="checkbox" id="toggle-ist" onchange="handleSelectionChange()">
           <span class="slider"></span>
         </label>
       </div>
@@ -554,7 +554,7 @@
           </div>
         </div>
         <label class="switch">
-          <input type="checkbox" id="toggle-evt" onchange="syncOneSignalTags()">
+          <input type="checkbox" id="toggle-evt" onchange="handleSelectionChange()">
           <span class="slider"></span>
         </label>
       </div>
@@ -562,10 +562,9 @@
     </div>
 
     <!-- Action Buttons -->
-    <!-- Tasto dinamico: parte Blu senza icona, diventa Verde con icona al click -->
-    <button id="btn-accept" class="btn btn-action" onclick="acceptAll()">
+    <button id="btn-action" class="btn btn-action" onclick="saveAndActivate()">
       <span id="btn-icon-container"></span>
-      <span id="btn-text">Accetto Tutto</span>
+      <span id="btn-text">Attiva notifiche</span>
     </button>
     
     <button class="btn btn-outline-danger" onclick="unsubscribeAll()">
@@ -595,7 +594,7 @@
     </div>
   </div>
 
-  <!-- Modal Privacy Policy Blindata GDPR -->
+  <!-- Modal Privacy Policy -->
   <div class="modal-overlay" id="privacy-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -622,17 +621,13 @@
         </ul>
 
         <h4>4. Fornitori Tecnici e Responsabili del Trattamento</h4>
-        <p>Il servizio di gestione ed erogazione tecnica delle notifiche è affidato alla piattaforma terzi <strong>OneSignal, Inc.</strong>, che agisce in qualità di Responsabile del Trattamento ai sensi dell'Art. 28 GDPR. Il trasferimento dei dati verso server extra-UE (USA) avviene in conformità al Data Privacy Framework UE-USA e mediante Clausole Contrattuali Standard (SCC).</p>
+        <p>Il servizio di gestione ed erogazione tecnica delle notifiche è affidato alla piattaforma terzi <strong>OneSignal, Inc.</strong>, che agisce in qualità di Responsabile del Trattamento ai sensi dell'Art. 28 GDPR.</p>
 
         <h4>5. Periodo di Conservazione dei Dati</h4>
-        <p>I dati pseudonimizzati (Push Token) rimangono attivi fino a quando l'utente sceglie spontaneamente di revocare il proprio consenso o disiscriversi dal servizio.</p>
+        <p>I dati pseudonimizzati rimangono attivi fino a quando l'utente sceglie spontaneamente di revocare il proprio consenso o disiscriversi dal servizio.</p>
 
         <h4>6. Diritti dell'Interessato e Revoca del Consenso</h4>
-        <p>In conformità agli articoli 15 e ss. del GDPR, l'interessato ha il diritto di revocare il consenso ed eliminare i propri dati in qualsiasi momento. La revoca è immediata e può essere eseguita in totale autonomia tramite:</p>
-        <ul>
-          <li>Il pulsante <strong>"Disiscriviti dalle notifiche"</strong> presente in questa pagina.</li>
-          <li>La gestione autonoma dei permessi notifiche all'interno delle impostazioni del proprio browser.</li>
-        </ul>
+        <p>In conformità agli articoli 15 e ss. del GDPR, l'interessato ha il diritto di revocare il consenso ed eliminare i propri dati in qualsiasi momento tramite il pulsante "Disiscriviti dalle notifiche".</p>
       </div>
       <div class="modal-footer">
         <button class="btn-modal-close" onclick="closePrivacyModal()">Chiudi e Torna al Sito</button>
@@ -645,75 +640,104 @@
     &copy; 2026 Comune di Toffia — Servizi Digitali al Cittadino
   </footer>
 
-  <!-- Script -->
+  <!-- JavaScript Logic -->
   <script>
     const toggleIst = document.getElementById('toggle-ist');
     const toggleEvt = document.getElementById('toggle-evt');
     const privacyFlag = document.getElementById('privacy-flag');
-    const btnAccept = document.getElementById('btn-accept');
+    const btnAction = document.getElementById('btn-action');
     const btnText = document.getElementById('btn-text');
     const btnIconContainer = document.getElementById('btn-icon-container');
+
+    // Inizializzazione della pagina: Ripristina preferenze salvate
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSavedPreferences();
+    });
 
     function showFallbackShield() {
       document.getElementById('main-logo').style.display = 'none';
       document.getElementById('fallback-shield').style.display = 'block';
     }
 
-    function requestOneSignalPermission() {
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.Notifications.requestPermission();
-      });
+    // Carica stato dei selettori e del pulsante da localStorage
+    function loadSavedPreferences() {
+      const savedIst = localStorage.getItem('toffia_notif_ist');
+      const savedEvt = localStorage.getItem('toffia_notif_evt');
+      const isActivated = localStorage.getItem('toffia_notif_activated');
+
+      if (savedIst !== null) toggleIst.checked = (savedIst === 'true');
+      if (savedEvt !== null) toggleEvt.checked = (savedEvt === 'true');
+
+      if (isActivated === 'true') {
+        setBtnActivatedState();
+      } else {
+        setBtnPendingState();
+      }
     }
 
-    function setBtnActivatedState() {
-      btnAccept.classList.add('activated');
-      btnText.textContent = "Notifiche attivate";
-      btnIconContainer.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    // Viene chiamato ad ogni singolo spostamento dei selettori
+    function handleSelectionChange() {
+      // Ogni volta che viene fatta una variazione non salvata, il tasto torna blu
+      setBtnPendingState();
     }
 
-    function setBtnInitialState() {
-      btnAccept.classList.remove('activated');
-      btnText.textContent = "Accetto Tutto";
+    // Imposta lo stato del Tasto su Blu ("Attiva notifiche")
+    function setBtnPendingState() {
+      btnAction.classList.remove('activated');
+      btnText.textContent = "Attiva notifiche";
       btnIconContainer.innerHTML = "";
     }
 
-    function acceptAll() {
+    // Imposta lo stato del Tasto su Verde ("Notifiche Attivate")
+    function setBtnActivatedState() {
+      btnAction.classList.add('activated');
+      btnText.textContent = "Notifiche Attivate";
+      btnIconContainer.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    }
+
+    // Click sul pulsante "Attiva notifiche" (Conferma e Salva)
+    function saveAndActivate() {
       if (!privacyFlag.checked) {
         alert("Per favore, spunta il flag di accettazione della Privacy Policy per proseguire.");
         return;
       }
-      toggleIst.checked = true;
-      toggleEvt.checked = true;
-      syncOneSignalTags();
-      requestOneSignalPermission();
-      setBtnActivatedState();
-    }
 
-    function unsubscribeAll() {
-      toggleIst.checked = false;
-      toggleEvt.checked = false;
-      
+      // Salva nel browser dell'utente
+      localStorage.setItem('toffia_notif_ist', toggleIst.checked);
+      localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
+      localStorage.setItem('toffia_notif_activated', 'true');
+
+      // Sincronizza con OneSignal
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.User.PushSubscription.optOut();
-      });
-      setBtnInitialState();
-      alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
-    }
-
-    function syncOneSignalTags() {
-      if (!privacyFlag.checked) {
-        alert("Per modificare le preferenze, accetta prima l'informativa sulla privacy.");
-        return;
-      }
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.Notifications.requestPermission();
         OneSignal.User.addTags({
           "istituzionale": toggleIst.checked ? "true" : "false",
           "eventi": toggleEvt.checked ? "true" : "false"
         });
       });
+
+      // Cambia stato visivo del pulsante a verde
+      setBtnActivatedState();
+    }
+
+    // Disiscrizione Totale
+    function unsubscribeAll() {
+      toggleIst.checked = false;
+      toggleEvt.checked = false;
+
+      // Resetta dati salvati
+      localStorage.removeItem('toffia_notif_ist');
+      localStorage.removeItem('toffia_notif_evt');
+      localStorage.setItem('toffia_notif_activated', 'false');
+      
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.User.PushSubscription.optOut();
+      });
+
+      setBtnPendingState();
+      alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
     }
 
     function openPrivacyModal() {
