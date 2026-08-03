@@ -40,37 +40,41 @@
                   url('https://images.unsplash.com/photo-1548625361-18568c075727?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
       background-size: cover;
       color: #1e293b;
-      padding: 20px;
+      padding: 25px 20px;
     }
 
-    /* Header Section Banner */
-    header {
+    /* Main Container - Single Box (Header + Body) */
+    .card {
       width: 100%;
       max-width: 540px;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 26px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      padding: 32px 28px;
+      margin-top: 10px;
+      margin-bottom: 25px;
+    }
+
+    /* Header integrato nel box */
+    .header-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      margin-top: 15px;
-      margin-bottom: 25px;
-      padding: 28px 24px;
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 24px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      gap: 12px;
       text-align: center;
+      padding-bottom: 22px;
     }
 
     .header-logo-container {
-      width: 90px;
-      height: 90px;
+      width: 85px;
+      height: 85px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     .header-logo-container img {
@@ -80,11 +84,10 @@
       display: block;
     }
 
-    /* SVG Fallback */
     .header-logo-container .fallback-shield {
       display: none;
-      width: 75px;
-      height: 75px;
+      width: 70px;
+      height: 70px;
       color: #1e3a8a;
     }
 
@@ -97,29 +100,24 @@
       letter-spacing: -0.02em;
     }
 
+    /* Scritta Centro Notifiche: Grigio e sottile */
     .header-text h1 span {
       display: block;
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: #2563eb;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #64748b;
       margin-top: 4px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-transform: none;
     }
 
-    /* Main Container / Card */
-    .card {
+    /* Linea divisoria tra Header e Corpo */
+    .divider {
       width: 100%;
-      max-width: 540px;
-      background: rgba(255, 255, 255, 0.97);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 26px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      padding: 32px 28px;
-      margin-bottom: 25px;
+      height: 1px;
+      background: #e2e8f0;
+      margin-bottom: 24px;
     }
 
     .svg-icon {
@@ -267,7 +265,7 @@
       transform: translateX(24px);
     }
 
-    /* Buttons */
+    /* Buttons General */
     .btn {
       width: 100%;
       padding: 15px 20px;
@@ -289,7 +287,7 @@
       height: 20px;
     }
 
-    /* Tasto da cliccare / modifiche pendenti: Blu senza Icona */
+    /* Tasto Attiva Notifiche (Blu / Verde) */
     .btn-action {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -301,7 +299,6 @@
       transform: translateY(-1px);
     }
 
-    /* Stato ATTIVATO e Salvato: Verde con Spunta */
     .btn-action.activated {
       background: linear-gradient(135deg, #059669, #047857);
       box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
@@ -311,17 +308,30 @@
       background: linear-gradient(135deg, #047857, #065f46);
     }
 
-    .btn-outline-danger {
-      background: transparent;
-      color: #dc2626;
-      border: 1.5px solid #fca5a5;
-      margin-top: 8px;
+    /* Tasto Disattiva Notifiche (Inizialmente Grigio) */
+    .btn-deactivate {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      margin-top: 6px;
       margin-bottom: 0;
     }
 
-    .btn-outline-danger:hover {
-      background: #fef2f2;
-      border-color: #ef4444;
+    .btn-deactivate:hover {
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    /* Tasto Disattiva Notifiche (Stato Cliccato: Rosso) */
+    .btn-deactivate.deactivated {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+    }
+
+    .btn-deactivate.deactivated:hover {
+      background: linear-gradient(135deg, #b91c1c, #991b1b);
     }
 
     /* Privacy Container */
@@ -380,7 +390,7 @@
       text-decoration: underline;
     }
 
-    /* Modal / Popup */
+    /* Modal / Popup Privacy */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -485,31 +495,33 @@
 
     @media (max-width: 480px) {
       body { padding: 12px; }
-      header { padding: 20px 16px; }
-      .header-text h1 { font-size: 1.45rem; }
-      .header-text h1 span { font-size: 1.15rem; }
       .card { padding: 24px 18px; }
+      .header-text h1 { font-size: 1.45rem; }
+      .header-text h1 span { font-size: 0.95rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header Banner -->
-  <header>
-    <div class="header-logo-container">
-      <img id="main-logo" src="logo-comune-toffia.png" alt="Logo Comune di Toffia" onerror="showFallbackShield()">
-      <svg id="fallback-shield" class="svg-icon fallback-shield" viewBox="0 0 24 24">
-        <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 4a3 3 0 0 1 3 3c0 1.3-.83 2.42-2 2.83V16h-2v-4.17A3.001 3.001 0 0 1 12 6z"/>
-      </svg>
-    </div>
-    <div class="header-text">
-      <h1>Comune di Toffia <span>Centro Notifiche</span></h1>
-    </div>
-  </header>
-
-  <!-- Main Card -->
+  <!-- Single Unified Card (Header + Body) -->
   <div class="card">
     
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="header-logo-container">
+        <img id="main-logo" src="logo-comune-toffia.png" alt="Logo Comune di Toffia" onerror="showFallbackShield()">
+        <svg id="fallback-shield" class="svg-icon fallback-shield" viewBox="0 0 24 24">
+          <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 4a3 3 0 0 1 3 3c0 1.3-.83 2.42-2 2.83V16h-2v-4.17A3.001 3.001 0 0 1 12 6z"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Comune di Toffia <span>Centro Notifiche</span></h1>
+      </div>
+    </div>
+
+    <!-- Linea divisoria tra Header e Corpo -->
+    <div class="divider"></div>
+
     <!-- Info Banner -->
     <div class="info-banner">
       <svg class="svg-icon info-banner-icon" viewBox="0 0 24 24">
@@ -563,15 +575,17 @@
 
     <!-- Action Buttons -->
     <button id="btn-action" class="btn btn-action" onclick="saveAndActivate()">
-      <span id="btn-icon-container"></span>
-      <span id="btn-text">Attiva notifiche</span>
+      <span id="btn-action-icon"></span>
+      <span id="btn-action-text">Attiva notifiche</span>
     </button>
     
-    <button class="btn btn-outline-danger" onclick="unsubscribeAll()">
-      <svg class="svg-icon" viewBox="0 0 24 24">
-        <path d="M20 18.69L4.31 3 3 4.31 5.29 6.6C5.11 7.03 5 7.5 5 8v7H3v2h14.69l1.62 1.62 1.31-1.31zM7 15V8.31L13.69 15H7zm5 7c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6.71-4.29L19 16V8c0-3.07-1.63-5.64-4.5-6.32V1c0-.55-.45-1-1-1s-1 .45-1 1v.68c-.68.16-1.31.43-1.87.81l1.46 1.46C12.44 3.35 13 3 13.5 3c2.49 0 4.5 2.01 4.5 4.5v6.5l.71.71z"/>
-      </svg>
-      Disiscriviti dalle notifiche
+    <button id="btn-deactivate" class="btn btn-deactivate" onclick="deactivateNotifications()">
+      <span id="btn-deactivate-icon">
+        <svg class="svg-icon" viewBox="0 0 24 24">
+          <path d="M20 18.69L4.31 3 3 4.31 5.29 6.6C5.11 7.03 5 7.5 5 8v7H3v2h14.69l1.62 1.62 1.31-1.31zM7 15V8.31L13.69 15H7zm5 7c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6.71-4.29L19 16V8c0-3.07-1.63-5.64-4.5-6.32V1c0-.55-.45-1-1-1s-1 .45-1 1v.68c-.68.16-1.31.43-1.87.81l1.46 1.46C12.44 3.35 13 3 13.5 3c2.49 0 4.5 2.01 4.5 4.5v6.5l.71.71z"/>
+        </svg>
+      </span>
+      <span id="btn-deactivate-text">Disattiva Notifiche</span>
     </button>
 
     <!-- Privacy Consent Box -->
@@ -627,7 +641,7 @@
         <p>I dati pseudonimizzati rimangono attivi fino a quando l'utente sceglie spontaneamente di revocare il proprio consenso o disiscriversi dal servizio.</p>
 
         <h4>6. Diritti dell'Interessato e Revoca del Consenso</h4>
-        <p>In conformità agli articoli 15 e ss. del GDPR, l'interessato ha il diritto di revocare il consenso ed eliminare i propri dati in qualsiasi momento tramite il pulsante "Disiscriviti dalle notifiche".</p>
+        <p>In conformità agli articoli 15 e ss. del GDPR, l'interessato ha il diritto di revocare il consenso ed eliminare i propri dati in qualsiasi momento tramite il pulsante "Disattiva Notifiche".</p>
       </div>
       <div class="modal-footer">
         <button class="btn-modal-close" onclick="closePrivacyModal()">Chiudi e Torna al Sito</button>
@@ -645,11 +659,17 @@
     const toggleIst = document.getElementById('toggle-ist');
     const toggleEvt = document.getElementById('toggle-evt');
     const privacyFlag = document.getElementById('privacy-flag');
+    
+    // Elementi Tasto Attiva
     const btnAction = document.getElementById('btn-action');
-    const btnText = document.getElementById('btn-text');
-    const btnIconContainer = document.getElementById('btn-icon-container');
+    const btnActionText = document.getElementById('btn-action-text');
+    const btnActionIcon = document.getElementById('btn-action-icon');
 
-    // Inizializzazione della pagina: Ripristina preferenze salvate
+    // Elementi Tasto Disattiva
+    const btnDeactivate = document.getElementById('btn-deactivate');
+    const btnDeactivateText = document.getElementById('btn-deactivate-text');
+    const btnDeactivateIcon = document.getElementById('btn-deactivate-icon');
+
     document.addEventListener("DOMContentLoaded", () => {
       loadSavedPreferences();
     });
@@ -659,55 +679,73 @@
       document.getElementById('fallback-shield').style.display = 'block';
     }
 
-    // Carica stato dei selettori e del pulsante da localStorage
+    // Carica preferenze salvate
     function loadSavedPreferences() {
       const savedIst = localStorage.getItem('toffia_notif_ist');
       const savedEvt = localStorage.getItem('toffia_notif_evt');
       const isActivated = localStorage.getItem('toffia_notif_activated');
+      const isDeactivated = localStorage.getItem('toffia_notif_deactivated');
 
       if (savedIst !== null) toggleIst.checked = (savedIst === 'true');
       if (savedEvt !== null) toggleEvt.checked = (savedEvt === 'true');
 
-      if (isActivated === 'true') {
+      if (isDeactivated === 'true') {
+        setBtnDeactivatedState();
+      } else if (isActivated === 'true') {
         setBtnActivatedState();
+        resetBtnDeactivateStyle();
       } else {
         setBtnPendingState();
+        resetBtnDeactivateStyle();
       }
     }
 
-    // Viene chiamato ad ogni singolo spostamento dei selettori
+    // Cambio selettori manuale
     function handleSelectionChange() {
-      // Ogni volta che viene fatta una variazione non salvata, il tasto torna blu
       setBtnPendingState();
+      resetBtnDeactivateStyle();
     }
 
-    // Imposta lo stato del Tasto su Blu ("Attiva notifiche")
+    // Tasto Attiva -> Blu ("Attiva notifiche")
     function setBtnPendingState() {
       btnAction.classList.remove('activated');
-      btnText.textContent = "Attiva notifiche";
-      btnIconContainer.innerHTML = "";
+      btnActionText.textContent = "Attiva notifiche";
+      btnActionIcon.innerHTML = "";
     }
 
-    // Imposta lo stato del Tasto su Verde ("Notifiche Attivate")
+    // Tasto Attiva -> Verde ("Notifiche Attivate")
     function setBtnActivatedState() {
       btnAction.classList.add('activated');
-      btnText.textContent = "Notifiche Attivate";
-      btnIconContainer.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+      btnActionText.textContent = "Notifiche Attivate";
+      btnActionIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
     }
 
-    // Click sul pulsante "Attiva notifiche" (Conferma e Salva)
+    // Resetta Tasto Disattiva -> Grigio ("Disattiva Notifiche")
+    function resetBtnDeactivateStyle() {
+      btnDeactivate.classList.remove('deactivated');
+      btnDeactivateText.textContent = "Disattiva Notifiche";
+      btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 18.69L4.31 3 3 4.31 5.29 6.6C5.11 7.03 5 7.5 5 8v7H3v2h14.69l1.62 1.62 1.31-1.31zM7 15V8.31L13.69 15H7zm5 7c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6.71-4.29L19 16V8c0-3.07-1.63-5.64-4.5-6.32V1c0-.55-.45-1-1-1s-1 .45-1 1v.68c-.68.16-1.31.43-1.87.81l1.46 1.46C12.44 3.35 13 3 13.5 3c2.49 0 4.5 2.01 4.5 4.5v6.5l.71.71z"/></svg>`;
+    }
+
+    // Imposta Tasto Disattiva -> Rosso ("Notifiche disattivate")
+    function setBtnDeactivatedState() {
+      btnDeactivate.classList.add('deactivated');
+      btnDeactivateText.textContent = "Notifiche disattivate";
+      btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>`;
+    }
+
+    // Salva ed Attiva Preferenze
     function saveAndActivate() {
       if (!privacyFlag.checked) {
         alert("Per favore, spunta il flag di accettazione della Privacy Policy per proseguire.");
         return;
       }
 
-      // Salva nel browser dell'utente
       localStorage.setItem('toffia_notif_ist', toggleIst.checked);
       localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
       localStorage.setItem('toffia_notif_activated', 'true');
+      localStorage.setItem('toffia_notif_deactivated', 'false');
 
-      // Sincronizza con OneSignal
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.Notifications.requestPermission();
@@ -717,27 +755,27 @@
         });
       });
 
-      // Cambia stato visivo del pulsante a verde
       setBtnActivatedState();
+      resetBtnDeactivateStyle();
     }
 
-    // Disiscrizione Totale
-    function unsubscribeAll() {
+    // Disattiva Notifiche (Click sul tasto grigio che diventa rosso)
+    function deactivateNotifications() {
       toggleIst.checked = false;
       toggleEvt.checked = false;
 
-      // Resetta dati salvati
-      localStorage.removeItem('toffia_notif_ist');
-      localStorage.removeItem('toffia_notif_evt');
+      localStorage.setItem('toffia_notif_ist', 'false');
+      localStorage.setItem('toffia_notif_evt', 'false');
       localStorage.setItem('toffia_notif_activated', 'false');
-      
+      localStorage.setItem('toffia_notif_deactivated', 'true');
+
       window.OneSignalDeferred = window.OneSignalDeferred || [];
       OneSignalDeferred.push(function(OneSignal) {
         OneSignal.User.PushSubscription.optOut();
       });
 
       setBtnPendingState();
-      alert("Ti sei disiscritto con successo dalle notifiche del Comune di Toffia.");
+      setBtnDeactivatedState();
     }
 
     function openPrivacyModal() {
