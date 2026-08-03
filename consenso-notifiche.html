@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifiche — Scegli cosa ricevere</title>
+
+<!-- OneSignal SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "bb1e9ba5-eee7-4d95-b674-c3c670842374",
+    });
+  });
+</script>
+
+<style>
+  :root {
+    --blu: #1b3a5c;          /* istituzionale */
+    --blu-scuro: #122a44;
+    --ocra: #b97a2a;         /* eventi e cultura */
+    --carta: #f7f5f0;
+    --inchiostro: #24292e;
+    --grigio: #6b7280;
+    --linea: #dcd8cf;
+    --verde: #2e7d4f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Titillium Web", "Segoe UI", system-ui, sans-serif;
+    background: var(--carta);
+    color: var(--inchiostro);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .scheda {
+    width: 100%;
+    max-width: 560px;
+    background: #fff;
+    border: 1px solid var(--linea);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(18, 42, 68, 0.08);
+  }
+
+  .testata {
+    background: var(--blu);
+    color: #fff;
+    padding: 28px 28px 24px;
+  }
+
+  .testata .campanella {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+
+  .testata h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+  }
+
+  .testata p {
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.45;
+  }
+
+  .contenuto { padding: 24px 28px 28px; }
+
+  .opzione {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 16px;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    user-select: none;
+  }
+  .opzione + .opzione { margin-top: 14px; }
+
+  .opzione:hover { background: #fbfaf7; }
+
+  .opzione.attiva-blu  { border-color: var(--blu);  background: #f2f6fa; }
+  .opzione.attiva-ocra { border-color: var(--ocra); background: #fbf5ec; }
+
+  .opzione .icona {
+    flex-shrink: 0;
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+  }
+  .icona.ist { background: #e6edf4; color: var(--blu); }
+  .icona.cul { background: #f6ecdd; color: var(--ocra); }
+
+  .opzione .testo { flex: 1; }
+  .opzione .testo strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .opzione .testo span {
+    font-size: 0.85rem;
+    color: var(--grigio);
+    line-height: 1.4;
+  }
+
+  /* Interruttore a slide */
+  .interruttore {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px; height: 30px;
+    margin-top: 6px;
+  }
+  .interruttore input {
+    position: absolute;
+    opacity: 0;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .binario {
+    position: absolute;
+    inset: 0;
+    background: #cfd5dc;
+    border-radius: 999px;
+    transition: background .25s;
+  }
+  .binario::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 24px; height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    transition: transform .25s;
+  }
+  .interruttore input:checked + .binario::after { transform: translateX(22px); }
+  .interruttore.ist input:checked + .binario { background: var(--blu); }
+  .interruttore.cul input:checked + .binario { background: var(--ocra); }
+  .interruttore input:focus-visible + .binario {
+    outline: 3px solid rgba(27,58,92,0.4);
+    outline-offset: 2px;
+  }
+
+  .conteggio {
+    margin: 18px 2px 14px;
+    font-size: 0.85rem;
+    color: var(--grigio);
+    min-height: 1.2em;
+  }
+
+  button.attiva {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.02rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--blu);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .2s, opacity .2s;
+  }
+  button.attiva:hover:not(:disabled) { background: var(--blu-scuro); }
+  button.attiva:disabled {
+    background: #b8bec6;
+    cursor: not-allowed;
+  }
+
+  .esito {
+    display: none;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .esito.ok {
+    display: block;
+    background: #e9f4ee;
+    color: var(--verde);
+    border: 1px solid #bfdccb;
+  }
+  .esito.errore {
+    display: block;
+    background: #faeeea;
+    color: #a4402a;
+    border: 1px solid #e8c7bc;
+  }
+
+  .nota {
+    margin-top: 18px;
+    font-size: 0.78rem;
+    color: var(--grigio);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="scheda">
+  <header class="testata">
+    <div class="campanella" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+      </svg>
+    </div>
+    <h1>Scegli le notifiche da ricevere</h1>
+    <p>Attiva le categorie che ti interessano. Puoi selezionarne una o entrambe, e cambiare idea in qualsiasi momento.</p>
+  </header>
+
+  <div class="contenuto">
+
+    <label class="opzione" id="cardIst" for="toggleIst">
+      <div class="icona ist" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/>
+        </svg>
+      </div>
+      <div class="testo">
+        <strong>Notifiche istituzionali e di servizio</strong>
+        <span>Avvisi ufficiali, comunicazioni di servizio, scadenze e informazioni utili per i cittadini.</span>
+      </div>
+      <div class="interruttore ist">
+        <input type="checkbox" id="toggleIst" aria-label="Attiva notifiche istituzionali e di servizio">
+        <span class="binario"></span>
+      </div>
+    </label>
+
+    <label class="opzione" id="cardCul" for="toggleCul">
+      <div class="icona cul" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 10s3-3 3-8"/><path d="M22 10s-3-3-3-8"/><path d="M10 2c0 4.4-3.6 8-8 8v10h20V10c-4.4 0-8-3.6-8-8"/><path d="M12 12v6"/><path d="M9 15h6"/>
+        </svg>
+      </div>
+      <div class="testo">
+        <strong>Notifiche di eventi e cultura</strong>
+        <span>Manifestazioni, mostre, spettacoli, iniziative culturali e appuntamenti sul territorio.</span>
+      </div>
+      <div class="interruttore cul">
+        <input type="checkbox" id="toggleCul" aria-label="Attiva notifiche di eventi e cultura">
+        <span class="binario"></span>
+      </div>
+    </label>
+
+    <p class="conteggio" id="conteggio">Nessuna categoria selezionata</p>
+
+    <button class="attiva" id="btnAttiva" disabled>Attiva notifiche</button>
+
+    <div class="esito" id="esito" role="status"></div>
+
+    <p class="nota">Il browser ti chiederà l'autorizzazione a mostrare le notifiche. Potrai disattivarle in qualsiasi momento dalle impostazioni.</p>
+  </div>
+</main>
+
+<script>
+  const toggleIst = document.getElementById('toggleIst');
+  const toggleCul = document.getElementById('toggleCul');
+  const cardIst   = document.getElementById('cardIst');
+  const cardCul   = document.getElementById('cardCul');
+  const btn       = document.getElementById('btnAttiva');
+  const conteggio = document.getElementById('conteggio');
+  const esito     = document.getElementById('esito');
+
+  function aggiorna() {
+    cardIst.classList.toggle('attiva-blu',  toggleIst.checked);
+    cardCul.classList.toggle('attiva-ocra', toggleCul.checked);
+
+    const n = (toggleIst.checked ? 1 : 0) + (toggleCul.checked ? 1 : 0);
+    btn.disabled = n === 0;
+
+    if (n === 0)      conteggio.textContent = 'Nessuna categoria selezionata';
+    else if (n === 1) conteggio.textContent = '1 categoria selezionata';
+    else              conteggio.textContent = '2 categorie selezionate';
+  }
+
+  toggleIst.addEventListener('change', aggiorna);
+  toggleCul.addEventListener('change', aggiorna);
+  aggiorna();
+
+  btn.addEventListener('click', function () {
+    btn.disabled = true;
+    btn.textContent = 'Attivazione in corso…';
+    esito.className = 'esito';
+    esito.textContent = '';
+
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        // 0. Se il permesso è già stato negato in passato, il browser NON
+        //    mostrerà più il prompt: bisogna sbloccarlo manualmente.
+        if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+          esito.className = 'esito errore';
+          esito.innerHTML = 'Le notifiche risultano <strong>bloccate</strong> per questo sito. ' +
+            'Per riattivarle: clicca sull\'icona del lucchetto accanto all\'indirizzo, ' +
+            'apri le impostazioni del sito e riporta il permesso "Notifiche" su ' +
+            '<strong>Chiedi</strong> o <strong>Consenti</strong>, poi ricarica la pagina.';
+          btn.textContent = 'Attiva notifiche';
+          btn.disabled = false;
+          return;
+        }
+
+        // 1. Richiedi il permesso per le notifiche (prompt nativo del browser)
+        await OneSignal.Notifications.requestPermission();
+
+        if (!OneSignal.Notifications.permission) {
+          esito.className = 'esito errore';
+          esito.textContent = 'Autorizzazione non concessa. Per ricevere le notifiche consenti i permessi dalle impostazioni del browser e riprova.';
+          btn.textContent = 'Attiva notifiche';
+          btn.disabled = false;
+          return;
+        }
+
+        // 2. Assicurati che l'utente sia iscritto alle push
+        await OneSignal.User.PushSubscription.optIn();
+
+        // 3. Salva le preferenze come tag su OneSignal
+        //    (usali poi per segmentare gli invii: istituzionali = "1", eventi_cultura = "1")
+        await OneSignal.User.addTags({
+          istituzionali: toggleIst.checked ? '1' : '0',
+          eventi_cultura: toggleCul.checked ? '1' : '0'
+        });
+
+        const scelte = [];
+        if (toggleIst.checked) scelte.push('istituzionali e di servizio');
+        if (toggleCul.checked) scelte.push('eventi e cultura');
+
+        esito.className = 'esito ok';
+        esito.textContent = 'Notifiche attivate per: ' + scelte.join(' e ') + '. Le preferenze sono state salvate.';
+        btn.textContent = 'Preferenze salvate ✓';
+        // Il pulsante resta riattivabile se l'utente cambia i selettori
+        toggleIst.addEventListener('change', ripristinaPulsante, { once: true });
+        toggleCul.addEventListener('change', ripristinaPulsante, { once: true });
+
+      } catch (err) {
+        console.error('Errore OneSignal:', err);
+        esito.className = 'esito errore';
+        esito.textContent = 'Si è verificato un errore durante l\'attivazione. Ricarica la pagina e riprova.';
+        btn.textContent = 'Attiva notifiche';
+        btn.disabled = false;
+      }
+    });
+  });
+
+  function ripristinaPulsante() {
+    btn.textContent = 'Attiva notifiche';
+    aggiorna();
+  }
+</script>
+
+</body>
+</html>
