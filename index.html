@@ -1,4 +1,4 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8">
@@ -43,35 +43,41 @@ html_content = """<!DOCTYPE html>
       width: 100%;
       max-width: 540px;
       display: flex;
+      flex-direction: column; /* Logo sopra, testo sotto */
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 12px;
       margin-top: 15px;
       margin-bottom: 25px;
-      padding: 16px 24px;
+      padding: 20px 24px;
       background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-radius: 20px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
       border: 1px solid rgba(255, 255, 255, 0.4);
+      text-align: center;
     }
 
     header img {
-      width: 65px;
-      height: 65px;
+      width: 75px;
+      height: 75px;
       object-fit: contain;
     }
 
-    .header-text {
-      text-align: left;
-    }
-
     .header-text h1 {
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: #0f172a;
-      line-height: 1.3;
+      line-height: 1.35;
+    }
+
+    .header-text h1 span {
+      display: block; /* Va a capo in automatico */
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #2563eb;
+      margin-top: 2px;
     }
 
     /* Main Container / Card */
@@ -386,18 +392,18 @@ html_content = """<!DOCTYPE html>
 
     @media (max-width: 480px) {
       body { padding: 12px; }
-      header { padding: 12px 16px; }
+      header { padding: 16px 16px; }
       .card { padding: 24px 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header Banner -->
+  <!-- Header Banner con Logo in alto al centro -->
   <header>
     <img src="logo-comune-toffia.png" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Italian_comune_coat_of_arms_template.svg/100px-Italian_comune_coat_of_arms_template.svg.png'" alt="Logo Comune di Toffia">
     <div class="header-text">
-      <h1>Benvenuti nel Centro Notifiche del Comune di Toffia</h1>
+      <h1>Comune di Toffia <span>Centro Notifiche</span></h1>
     </div>
   </header>
 
@@ -562,9 +568,3 @@ html_content = """<!DOCTYPE html>
   </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("HTML aggiornato con successo!")
