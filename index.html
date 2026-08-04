@@ -10,44 +10,69 @@
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
-        // Mostra automaticamente il popup di richiesta consenso all'arrivo
-        slidedown: {
-          prompts: [
-            {
-              type: "push",
-              actionMessage: "Vorremmo inviarti notifiche per gli aggiornamenti importanti.",
-              acceptButtonBody: "Consenti",
-              cancelButtonBody: "No grazie"
-            }
-          ]
-        }
-      });
+      try {
+        await OneSignal.init({
+          appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
+          slidedown: {
+            prompts: [
+              {
+                type: "push",
+                actionMessage: "Vorremmo inviarti notifiche per gli aggiornamenti importanti.",
+                acceptButtonBody: "Consenti",
+                cancelButtonBody: "No grazie"
+              }
+            ]
+          }
+        });
 
-      // Aggiorna la UI in base allo stato iniziale di iscrizione
-      updateSubscriptionStatus(OneSignal);
+        // Forza l'aggiornamento dello stato iniziale
+        await updateSubscriptionStatus(OneSignal);
 
-      // Listener per aggiornare l'interfaccia quando lo stato cambia
-      OneSignal.User.PushSubscription.addEventListener("change", function() {
-        updateSubscriptionStatus(OneSignal);
-      });
+        // Ascolta i cambiamenti di stato dell'iscrizione
+        OneSignal.User.PushSubscription.addEventListener("change", function() {
+          updateSubscriptionStatus(OneSignal);
+        });
+
+      } catch (error) {
+        console.error("Errore durante l'inizializzazione di OneSignal:", error);
+        document.getElementById("status-text").textContent = "Errore di caricamento o HTTPS non attivo";
+        document.getElementById("prompt-button").textContent = "Errore";
+      }
     });
 
-    // Funzione helper per gestire lo stato del pulsante nella pagina
     async function updateSubscriptionStatus(OneSignal) {
       const btn = document.getElementById("prompt-button");
       const statusText = document.getElementById("status-text");
-      const isSubscribed = OneSignal.User.PushSubscription.optedIn;
 
-      if (isSubscribed) {
+      // Verifichiamo se il browser supporta le notifiche push
+      if (!OneSignal.Notifications.isPushSupported()) {
+        statusText.textContent = "Le notifiche push non sono supportate su questo browser.";
+        btn.style.display = "none";
+        return;
+      }
+
+      // Otteniamo lo stato attuale di iscrizione
+      const isOptedIn = OneSignal.User.PushSubscription.optedIn;
+
+      if (isOptedIn) {
         statusText.textContent = "Stato attuale: Iscritto alle notifiche";
         btn.textContent = "Disattiva Notifiche";
-        btn.onclick = () => OneSignal.User.PushSubscription.optOut();
+        btn.onclick = async () => {
+          await OneSignal.User.PushSubscription.optOut();
+          updateSubscriptionStatus(OneSignal);
+        };
       } else {
         statusText.textContent = "Stato attuale: Non iscritto";
-        btn.textContent = "Attiva Notifiche";
-        btn.onclick = () => OneSignal.User.PushSubscription.optIn();
+        btn.textContent = "Attiva Notifiche / Richiedi Consenso";
+        btn.onclick = async () => {
+          // Innesca il popup di OneSignal se non ancora mostrato, oppure fa l'optIn
+          if (OneSignal.User.PushSubscription.id) {
+            await OneSignal.User.PushSubscription.optIn();
+          } else {
+            await OneSignal.Slidedown.promptPush();
+          }
+          updateSubscriptionStatus(OneSignal);
+        };
       }
     }
   </script>
