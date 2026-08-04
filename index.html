@@ -27,8 +27,6 @@
     }
 
     // ====== VERIFICA ONESTA DELL'ISCRIZIONE ======
-    // Non si fida del solo flag locale: controlla la catena reale.
-    // Ritorna: "subscribed" | "invalid" (locale dice sì ma la catena è rotta) | "unsubscribed"
     async function verifyRealSubscription(OneSignal) {
       const permission = Notification.permission;
       const localOptedIn = OneSignal.User.PushSubscription.optedIn;
@@ -39,13 +37,11 @@
 
       let chainOk = true;
 
-      // 1. Service worker registrato per questo ambito?
       try {
         const reg = await navigator.serviceWorker.getRegistration("/Toffia/");
         if (!reg) {
           chainOk = false;
         } else {
-          // 2. Push subscription reale presente nel browser?
           const pushSub = await reg.pushManager.getSubscription();
           if (!pushSub) chainOk = false;
         }
@@ -53,7 +49,6 @@
         chainOk = false;
       }
 
-      // 3. L'SDK ha ID e token validi?
       const osId = OneSignal.User.PushSubscription.id;
       const token = OneSignal.User.PushSubscription.token;
       if (!osId || !token) chainOk = false;
@@ -209,7 +204,7 @@
         OneSignalRef = OneSignal;
 
         await OneSignal.init({
-          appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
+          appId: "8df74c1e-0ef3-405d-98df-146184eb71ec",
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerParam: { scope: "/Toffia/" }
         });
@@ -290,7 +285,6 @@
         return;
       }
 
-      // Verifica onesta: interroga la catena reale, non solo il flag locale
       const realState = await verifyRealSubscription(OneSignal);
 
       if (realState === "subscribed") {
@@ -306,10 +300,9 @@
           openConfirm();
         };
       } else {
-        // "unsubscribed" oppure "invalid": in entrambi i casi serve (ri)attivare
         if (realState === "invalid") {
           statusText.textContent = t("invalid_status");
-          statusText.style.color = "#c77700"; // arancione: locale e realtà divergono
+          statusText.style.color = "#c77700";
         } else {
           statusText.textContent = t("unsubscribed_status");
           statusText.style.color = "#333";
@@ -862,7 +855,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041930</div>
+    <div class="header-version">V202608042000</div>
 
     <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
