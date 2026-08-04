@@ -221,7 +221,7 @@
       align-items: flex-start;
       gap: 8px;
       text-align: left;
-      margin: 0 0 1.25rem 0;
+      margin: 0 0 0.75rem 0;
       font-size: 0.85rem;
       color: #555;
     }
@@ -238,6 +238,13 @@
       font-weight: 600;
       text-decoration: underline;
       cursor: pointer;
+    }
+    .privacy-plain {
+      font-size: 0.8rem;
+      color: #4a8a4a;
+      font-weight: 600;
+      margin: 0 0 1.25rem 0;
+      line-height: 1.45;
     }
 
     /* Categorie di notifiche */
@@ -475,7 +482,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-version">V202600804_08</div>
+    <div class="header-version">V202608041341</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
@@ -535,6 +542,8 @@
         Ho letto e accetto l'<a onclick="openPrivacy(event)">Informativa sulla Privacy</a> relativa al servizio di notifiche.
       </label>
     </div>
+
+    <div class="privacy-plain">Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</div>
 
     <button id="prompt-button">Caricamento...</button>
   </div>
