@@ -8,9 +8,26 @@
   <!-- SDK OneSignal v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    let OneSignalRef = null;
-    let pendingToggle = null;
-    let currentLang = "it";
+    let OneSignalRef = null;        // riferimento globale all'SDK
+    let pendingToggle = null;       // ultimo interruttore spento (per ripristino in caso di "No")
+    let currentLang = "it";         // lingua corrente
+
+    // ====== IDENTITÀ STABILE DEL DISPOSITIVO (anti-duplicazione) ======
+    // Genera un ID tecnico anonimo, lo conserva nel browser e lo comunica a OneSignal
+    // come External ID: se il token push viene rigenerato, OneSignal riaggancia
+    // la nuova subscription allo stesso utente invece di crearne uno duplicato.
+    const DEVICE_ID_KEY = "toffia-device-id";
+    function getOrCreateDeviceId() {
+      let id = null;
+      try { id = localStorage.getItem(DEVICE_ID_KEY); } catch (e) {}
+      if (!id) {
+        id = (window.crypto && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'dev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        try { localStorage.setItem(DEVICE_ID_KEY, id); } catch (e) {}
+      }
+      return id;
+    }
 
     // ====== TRADUZIONI ======
     const translations = {
@@ -41,7 +58,7 @@
         ts2_h: "La richiesta di autorizzazione non compare",
         ts2_p: "Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i \"Bloccati\". Percorsi analoghi sono disponibili in Firefox ed Edge.",
         ts3_h: "Le notifiche risultano attive ma non arrivano",
-        ts3_p: "Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come \"Non disturbare\" o \"Concentrazione\".",
+        ts3_p: "Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come \"Non disturbare\" o \"Concentrazione\". Su <strong>Android</strong>, verificare che l'ottimizzazione della batteria non limiti il browser: <em>Impostazioni → App → Browser → Batteria → Senza restrizioni</em>.",
         ts4_h: "Utilizzo in modalità di navigazione privata",
         ts4_p: "In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.",
         ts5_h: "Utenti del browser Brave",
@@ -62,7 +79,7 @@
         pm2_p: "Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.",
         pm3_h: "Dati trattati",
         pm3_p1: "Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.",
-        pm3_p2: "L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.",
+        pm3_p2: "Gli unici dati tecnici trattati sono il <strong>token del dispositivo</strong> e un <strong>identificativo tecnico anonimo</strong> (generati dal browser), necessari esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.",
         pm4_h: "Revoca dell'iscrizione",
         pm4_p: "L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante \"Disattiva Notifiche\" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.",
         pm5_h: "Diritti dell'interessato",
@@ -96,7 +113,7 @@
         ts2_h: "The permission request does not appear",
         ts2_p: "Check that your browser does not block notifications globally. In Chrome: <em>Settings → Privacy and security → Site settings → Notifications</em>; make sure the global block option is not enabled and that this site is not listed under \"Blocked\". Similar paths are available in Firefox and Edge.",
         ts3_h: "Notifications are enabled but do not arrive",
-        ts3_p: "Check your <strong>operating system</strong> settings: on Windows (<em>Settings → System → Notifications</em>) and on macOS (<em>Settings → Notifications</em>) browser notifications may be disabled or silenced. Also check that modes such as \"Do Not Disturb\" or \"Focus\" are not active.",
+        ts3_p: "Check your <strong>operating system</strong> settings: on Windows (<em>Settings → System → Notifications</em>) and on macOS (<em>Settings → Notifications</em>) browser notifications may be disabled or silenced. Also check that modes such as \"Do Not Disturb\" or \"Focus\" are not active. On <strong>Android</strong>, make sure battery optimisation is not restricting the browser: <em>Settings → Apps → Browser → Battery → Unrestricted</em>.",
         ts4_h: "Using private browsing mode",
         ts4_p: "In incognito or private browsing mode, push notifications are generally not supported. Please subscribe from a normal browsing window.",
         ts5_h: "Brave browser users",
@@ -117,7 +134,7 @@
         pm2_p: "The service allows you to receive push notifications on your device regarding official communications, notices and public-interest information from the Municipality of Toffia. Subscription is optional and takes place exclusively at the user's initiative.",
         pm3_h: "Data processed",
         pm3_p1: "For the provision of the service, <strong>no identifying personal data is collected</strong>: no name, surname, e-mail address, telephone number or any other reference to the person.",
-        pm3_p2: "The only technical data processed is the <strong>device token</strong> (an anonymous technical identifier generated by the browser), required solely for delivering notifications, together with the <strong>notification type preferences</strong> selected by the user on this page. These data are managed by the <strong>OneSignal</strong> platform, the technical provider of the delivery service, and cannot be traced back to the person.",
+        pm3_p2: "The only technical data processed are the <strong>device token</strong> and an <strong>anonymous technical identifier</strong> (generated by the browser), required solely for delivering notifications, together with the <strong>notification type preferences</strong> selected by the user on this page. These data are managed by the <strong>OneSignal</strong> platform, the technical provider of the delivery service, and cannot be traced back to the person.",
         pm4_h: "Withdrawing your subscription",
         pm4_p: "You can disable notifications at any time using the \"Disable Notifications\" button on this page, or by revoking the notification permission in your browser settings. You can also disable individual notification types using the dedicated switches. Disabling results in the immediate cessation of delivery.",
         pm5_h: "Rights of the data subject",
@@ -130,6 +147,7 @@
       return translations[currentLang][key];
     }
 
+    // Applica la lingua a tutti gli elementi statici e aggiorna quelli dinamici
     function setLanguage(lang) {
       currentLang = lang;
       document.documentElement.lang = lang;
@@ -158,28 +176,35 @@
 
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
-          serviceWorkerParam: { scope: "/" },
-          serviceWorkerPath: "OneSignalSDKWorker.js"
+          // Registrazione esplicita del service worker: percorso e ambito.
+          // Il file OneSignalSDKWorker.js DEVE esistere nella root del sito.
+          serviceWorkerPath: "OneSignalSDKWorker.js",
+          serviceWorkerParam: { scope: "/" }
         });
 
-        // Forza la riconciliazione token-utente all'apertura da notifica
-        if (Notification.permission === "granted") {
-          const currentId = OneSignal.User.PushSubscription.id;
-          if (!OneSignal.User.PushSubscription.optedIn && currentId) {
-            await OneSignal.User.PushSubscription.optIn();
-          }
+        // ANTI-DUPLICAZIONE: aggancia questa installazione a un'identità stabile.
+        // Se il token push viene rigenerato dal browser, OneSignal riconduce la
+        // nuova subscription allo stesso utente invece di duplicare il dispositivo.
+        try {
+          await OneSignal.login(getOrCreateDeviceId());
+        } catch (e) {
+          console.log("Login identità dispositivo non riuscito:", e);
         }
 
+        // Inizializza lo stato del pulsante
         await updateSubscriptionStatus(OneSignal);
 
+        // Listener sui cambiamenti di iscrizione OneSignal
         OneSignal.User.PushSubscription.addEventListener("change", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
+        // Listener sui cambiamenti di permesso (più affidabile dopo il prompt nativo)
         OneSignal.Notifications.addEventListener("permissionChange", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
+        // Listener sui permessi nativi del browser (fallback)
         if (navigator.permissions) {
           const permissionStatus = await navigator.permissions.query({ name: 'notifications' });
           permissionStatus.onchange = function() {
@@ -187,10 +212,12 @@
           };
         }
 
+        // La checkbox privacy abilita/disabilita il pulsante di iscrizione
         document.getElementById("privacy-check").addEventListener("change", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
+        // Interruttori delle categorie: salvano le preferenze come tag su OneSignal
         document.getElementById("toggle-istituzionali").addEventListener("change", async function() {
           await OneSignal.User.addTag("istituzionali", this.checked ? "1" : "0");
           checkBothTogglesOff(this);
@@ -206,6 +233,7 @@
       }
     });
 
+    // All'avvio: ripristina la lingua salvata (default italiano)
     document.addEventListener("DOMContentLoaded", function() {
       let saved = "it";
       try { saved = localStorage.getItem("toffia-lang") || "it"; } catch (e) {}
@@ -243,7 +271,7 @@
 
       statusText.style.color = "#333";
 
-      if (isOptedIn && permission === "granted") {
+      if (isOptedIn) {
         privacyBox.style.display = "none";
         categoriesBox.style.display = "block";
         await syncCategoryToggles(OneSignal);
@@ -264,20 +292,25 @@
         btn.onclick = async () => {
           if (!privacyCheck.checked) return;
           try {
-            if (Notification.permission === "granted") {
+            // Ribadisce l'identità stabile prima dell'iscrizione,
+            // così anche i re-opt-in restano agganciati allo stesso utente
+            try { await OneSignal.login(getOrCreateDeviceId()); } catch (e) {}
+
+            if (Notification.permission === "granted" && OneSignal.User.PushSubscription.id) {
               await OneSignal.User.PushSubscription.optIn();
             } else {
               await OneSignal.Notifications.requestPermission();
             }
             await OneSignal.User.addTags({ istituzionali: "1", eventi_cultura: "1" });
           } catch (e) {
-            console.log("Errore durante l'attivazione:", e);
+            console.log("Richiesta permesso fallita o annullata dall'utente:", e);
           }
           updateSubscriptionStatus(OneSignal);
         };
       }
     }
 
+    // Se entrambi gli interruttori sono spenti, chiede se disattivare del tutto le notifiche
     function checkBothTogglesOff(lastChanged) {
       const t1 = document.getElementById("toggle-istituzionali");
       const t2 = document.getElementById("toggle-eventi");
@@ -287,6 +320,7 @@
       }
     }
 
+    // Allinea gli interruttori ai tag salvati su OneSignal
     async function syncCategoryToggles(OneSignal) {
       try {
         const tags = await OneSignal.User.getTags();
@@ -297,6 +331,7 @@
       }
     }
 
+    // Popup di conferma disattivazione
     function openConfirm() {
       document.getElementById("confirm-modal").style.display = "flex";
       document.body.style.overflow = "hidden";
@@ -334,8 +369,9 @@
       }
     }
 
+    // Gestione popup privacy
     function openPrivacy(event) {
-      if (event) event.preventDefault();
+      event.preventDefault();
       document.getElementById("privacy-modal").style.display = "flex";
       document.body.style.overflow = "hidden";
     }
@@ -345,6 +381,7 @@
       document.body.style.overflow = "";
     }
 
+    // Mostra/nascondi sezione risoluzione problemi
     function toggleTroubleshooting() {
       const content = document.getElementById("troubleshooting-content");
       const arrow = document.getElementById("troubleshooting-arrow");
@@ -368,6 +405,7 @@
       background-color: #f4f4f9;
     }
 
+    /* Barra superiore con selettore lingua */
     .top-bar {
       position: fixed;
       top: 0;
@@ -424,9 +462,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       max-width: 420px;
-      width: 100%;
       text-align: center;
-      box-sizing: border-box;
     }
     .logo {
       max-width: 110px;
@@ -486,6 +522,7 @@
       cursor: pointer;
     }
 
+    /* Box di approfondimento sulla tutela dei dati */
     .privacy-highlight {
       background: rgba(120, 180, 230, 0.07);
       border: 1px solid rgba(120, 180, 230, 0.35);
@@ -504,12 +541,13 @@
     }
     .privacy-highlight p {
       font-size: 0.85rem;
-      color: #4a7aa8;
+      color: #6fa3cf;
       font-weight: 500;
       line-height: 1.5;
       margin: 0;
     }
 
+    /* Categorie di notifiche */
     .categories-box {
       display: none;
       margin: 0 0 1.5rem 0;
@@ -532,6 +570,11 @@
       border-radius: 10px;
       margin-bottom: 0.6rem;
     }
+    .category-icon {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+    }
     .category-label {
       flex: 1;
       min-width: 0;
@@ -547,6 +590,7 @@
       margin-top: 1px;
     }
 
+    /* Interruttore a slitta */
     .switch {
       position: relative;
       display: inline-block;
@@ -594,7 +638,6 @@
       font-size: 1rem;
       border-radius: 6px;
       cursor: pointer;
-      width: 100%;
       transition: background-color 0.2s ease;
     }
     button:hover:not(:disabled) {
@@ -605,6 +648,7 @@
       cursor: not-allowed;
     }
 
+    /* Sezione risoluzione problemi */
     .troubleshooting {
       background: white;
       border-radius: 12px;
@@ -652,7 +696,15 @@
       margin: 0.35rem 0;
       line-height: 1.55;
     }
+    .troubleshooting-note {
+      background: #fdf3f3;
+      border-left: 3px solid #e54b4d;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin-top: 0.5rem;
+    }
 
+    /* Popup (privacy e conferma) */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -694,7 +746,6 @@
       color: #888;
       cursor: pointer;
       padding: 0 4px;
-      width: auto;
     }
     .modal-close:hover {
       color: #333;
@@ -718,7 +769,13 @@
       color: #555;
       margin: 0.4rem 0;
     }
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eee;
+      text-align: right;
+    }
 
+    /* Popup di conferma disattivazione */
     .confirm-content {
       max-width: 400px;
       text-align: center;
@@ -727,59 +784,88 @@
       text-align: center;
       padding: 1.5rem;
     }
-    .confirm-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 1.5rem;
-    }
-    .btn-secondary {
-      background-color: #e0e0e0;
+    .confirm-content .modal-body p {
+      font-size: 0.95rem;
       color: #333;
     }
-    .btn-secondary:hover {
-      background-color: #d0d0d0;
+    .confirm-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+    .btn-secondary {
+      background-color: #2f6fb2;
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #255d96;
+    }
+    .btn-danger {
+      background-color: #ffffff;
+      color: #888;
+      border: 1px solid #ddd;
+      font-weight: 500;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background-color: #f5f5f5;
+      color: #555;
     }
   </style>
 </head>
 <body>
 
+  <!-- Barra superiore con selettore lingua -->
   <div class="top-bar">
     <div class="lang-switch">
-      <button id="lang-it" class="lang-btn active" onclick="setLanguage('it')">
-        <svg viewBox="0 0 640 480"><path fill="#009246" d="M0 0h213.3v480H0z"/><path fill="#fff" d="M213.3 0h213.4v480H213.3z"/><path fill="#ce2b37" d="M426.7 0H640v480H426.7z"/></svg> IT
+      <button id="lang-it" class="lang-btn active" onclick="setLanguage('it')" aria-label="Italiano">
+        <svg viewBox="0 0 30 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="10" height="21" fill="#009246"/>
+          <rect x="10" y="0" width="10" height="21" fill="#ffffff"/>
+          <rect x="20" y="0" width="10" height="21" fill="#ce2b37"/>
+        </svg>
+        Italiano
       </button>
-      <button id="lang-en" class="lang-btn" onclick="setLanguage('en')">
-        <svg viewBox="0 0 640 480"><path fill="#012169" d="M0 0h640v480H0z"/><path fill="#fff" d="m75 0 245 184L565 0h75v55L395 240l245 185v55h-75L320 296 75 480H0v-55l245-185L0 55V0h75z"/><path fill="#C8102E" d="m424 288 216 162v30h-40L384 318l-40 30-216 162H88l216-162-40-30L48 480H8l216-162L8 156V126h40l216 162 40-30L520 96h40L344 258l40 30z"/><path fill="#fff" d="M240 0h160v480H240zM0 160h640v160H0z"/><path fill="#C8102E" d="M267 0h106v480H267zM0 187h640v106H0z"/></svg> EN
+      <button id="lang-en" class="lang-btn" onclick="setLanguage('en')" aria-label="English">
+        <svg viewBox="0 0 30 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="30" height="21" fill="#012169"/>
+          <path d="M0,0 L30,21 M30,0 L0,21" stroke="#ffffff" stroke-width="4"/>
+          <path d="M0,0 L30,21 M30,0 L0,21" stroke="#C8102E" stroke-width="2"/>
+          <path d="M15,0 V21 M0,10.5 H30" stroke="#ffffff" stroke-width="7"/>
+          <path d="M15,0 V21 M0,10.5 H30" stroke="#C8102E" stroke-width="4"/>
+        </svg>
+        English
       </button>
     </div>
   </div>
 
   <div class="card">
-    <h1 class="header-title">Comune di Toffia</h1>
-    <h2 class="header-subtitle" data-i18n="subtitle">Centro Notifiche</h2>
-    <div class="header-version">v202608041747</div>
+    <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
+    <div class="header-title">Comune di Toffia</div>
+    <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
+    <div class="header-version">V202608041812</div>
 
     <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
-    <div class="status" id="status-text" data-i18n="checking">Verifica stato...</div>
+    <div id="status-text" class="status" data-i18n="checking">Verifica stato...</div>
 
-    <div class="privacy-box" id="privacy-box">
-      <input type="checkbox" id="privacy-check">
-      <label for="privacy-check" data-i18n="privacy_label">
-        Ho letto e accetto l'<a onclick="openPrivacy(event)">Informativa sulla Privacy</a> relativa al servizio di notifiche.
-      </label>
-    </div>
-
-    <div class="privacy-highlight">
-      <div class="highlight-title" data-i18n="highlight_title">Tutela dei tuoi dati</div>
-      <p data-i18n="highlight_text">Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</p>
-    </div>
-
-    <div class="categories-box" id="categories-box">
+    <!-- Categorie di notifiche (visibili solo da iscritti) -->
+    <div id="categories-box" class="categories-box">
       <div class="categories-title" data-i18n="categories_title">Tipologie di notifiche</div>
 
       <div class="category-row">
+        <svg class="category-icon" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="4" y="27" width="26" height="3" rx="1" fill="#e54b4d"/>
+          <rect x="6" y="24" width="22" height="2.2" rx="0.8" fill="#e54b4d" opacity="0.55"/>
+          <rect x="8.2" y="14" width="2.6" height="9" rx="0.8" fill="#e54b4d"/>
+          <rect x="13.4" y="14" width="2.6" height="9" rx="0.8" fill="#e54b4d"/>
+          <rect x="18.6" y="14" width="2.6" height="9" rx="0.8" fill="#e54b4d"/>
+          <rect x="23.8" y="14" width="2.6" height="9" rx="0.8" fill="#e54b4d"/>
+          <path d="M17 3.5 L29 11 L29 12.5 L5 12.5 L5 11 Z" fill="#e54b4d"/>
+          <circle cx="17" cy="8.6" r="1.4" fill="#ffffff"/>
+        </svg>
         <div class="category-label">
           <div class="name" data-i18n="cat1_name">Istituzionali e Servizio</div>
           <div class="desc" data-i18n="cat1_desc">Avvisi ufficiali, scadenze, servizi comunali</div>
@@ -791,6 +877,15 @@
       </div>
 
       <div class="category-row">
+        <svg class="category-icon" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 8 C6 8 10 9.5 14 9.5 C18 9.5 22 8 22 8 L22 17 C22 23 18.5 27 14 27 C9.5 27 6 23 6 17 Z" fill="#e54b4d"/>
+          <ellipse cx="10.8" cy="14.5" rx="1.7" ry="2" fill="#ffffff"/>
+          <ellipse cx="17.2" cy="14.5" rx="1.7" ry="2" fill="#ffffff"/>
+          <path d="M10 20.5 C11.2 22.8 16.8 22.8 18 20.5" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <rect x="25.4" y="7" width="1.7" height="10" rx="0.8" fill="#e54b4d"/>
+          <circle cx="24.7" cy="17.6" r="2.4" fill="#e54b4d"/>
+          <path d="M27.1 7 L30.5 8.2 L30.5 10.4 L27.1 9.2 Z" fill="#e54b4d"/>
+        </svg>
         <div class="category-label">
           <div class="name" data-i18n="cat2_name">Eventi e Cultura</div>
           <div class="desc" data-i18n="cat2_desc">Manifestazioni, iniziative culturali, appuntamenti</div>
@@ -802,74 +897,98 @@
       </div>
     </div>
 
-    <button id="prompt-button" disabled data-i18n="loading_btn">Caricamento...</button>
+    <div id="privacy-box" class="privacy-box" style="display:none;">
+      <input type="checkbox" id="privacy-check">
+      <label for="privacy-check" data-i18n="privacy_label">
+        Ho letto e accetto l'<a onclick="openPrivacy(event)">Informativa sulla Privacy</a> relativa al servizio di notifiche.
+      </label>
+    </div>
+
+    <div class="privacy-highlight">
+      <div class="highlight-title" data-i18n="highlight_title">Tutela dei tuoi dati</div>
+      <p data-i18n="highlight_text">Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</p>
+    </div>
+
+    <button id="prompt-button" data-i18n="loading_btn">Caricamento...</button>
   </div>
 
+  <!-- Sezione Risoluzione dei problemi -->
   <div class="troubleshooting">
     <div class="troubleshooting-header" onclick="toggleTroubleshooting()">
-      <span class="troubleshooting-arrow" id="troubleshooting-arrow">▸</span>
+      <span id="troubleshooting-arrow" class="troubleshooting-arrow">▸</span>
       <span data-i18n="ts_header">Risoluzione dei problemi</span>
     </div>
-    <div class="troubleshooting-content" id="troubleshooting-content">
+    <div id="troubleshooting-content" class="troubleshooting-content">
+
       <h3 data-i18n="ts1_h">Il pulsante indica "Notifiche Bloccate"</h3>
-      <p data-i18n="ts1_p"></p>
+      <p data-i18n="ts1_p">Il browser ha memorizzato un rifiuto precedente per questo sito. Per sbloccare: cliccare sull'icona del <strong>lucchetto</strong> (o delle impostazioni) accanto all'indirizzo nella barra di navigazione, individuare la voce <strong>Notifiche</strong> e impostarla su "Chiedi" o "Consenti", quindi ricaricare la pagina.</p>
 
       <h3 data-i18n="ts2_h">La richiesta di autorizzazione non compare</h3>
-      <p data-i18n="ts2_p"></p>
+      <p data-i18n="ts2_p">Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i "Bloccati". Percorsi analoghi sono disponibili in Firefox ed Edge.</p>
 
       <h3 data-i18n="ts3_h">Le notifiche risultano attive ma non arrivano</h3>
-      <p data-i18n="ts3_p"></p>
+      <p data-i18n="ts3_p">Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come "Non disturbare" o "Concentrazione". Su <strong>Android</strong>, verificare che l'ottimizzazione della batteria non limiti il browser: <em>Impostazioni → App → Browser → Batteria → Senza restrizioni</em>.</p>
 
       <h3 data-i18n="ts4_h">Utilizzo in modalità di navigazione privata</h3>
-      <p data-i18n="ts4_p"></p>
+      <p data-i18n="ts4_p">In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.</p>
 
       <h3 data-i18n="ts5_h">Utenti del browser Brave</h3>
-      <p data-i18n="ts5_p1"></p>
-      <p data-i18n="ts5_p2"></p>
+      <div class="troubleshooting-note">
+        <p data-i18n="ts5_p1">Il browser <strong>Brave</strong>, per impostazione predefinita, tende a bloccare le notifiche push e i servizi che le veicolano (inclusa la tecnologia Google necessaria al loro recapito). Se si utilizza Brave e l'iscrizione non va a buon fine, è consigliabile utilizzare un browser più adatto al servizio, come Chrome, Firefox o Edge.</p>
+        <p data-i18n="ts5_p2">In alternativa, gli utenti esperti possono configurare Brave manualmente: aprire <em>brave://settings/privacy</em> e attivare l'opzione <strong>"Usa i servizi Google per la messaggistica push"</strong>, riavviare il browser, quindi verificare che gli <strong>Shields</strong> (icona del leone nella barra degli indirizzi) non blocchino elementi di questa pagina e che le notifiche per questo sito siano consentite in <em>brave://settings/content/notifications</em>.</p>
+      </div>
 
       <h3 data-i18n="ts6_h">Dispositivi mobili</h3>
-      <p data-i18n="ts6_p"></p>
+      <p data-i18n="ts6_p">Su <strong>Android</strong> il servizio funziona con i principali browser (Chrome, Firefox, Edge). Su <strong>iPhone e iPad</strong> (iOS 16.4 o successivo) è necessario prima aggiungere questa pagina alla schermata Home tramite il menu di condivisione di Safari ("Aggiungi a Home"), quindi aprirla dall'icona creata ed effettuare l'iscrizione da lì.</p>
 
       <h3 data-i18n="ts7_h">Il problema persiste</h3>
-      <p data-i18n="ts7_p"></p>
+      <p data-i18n="ts7_p">Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
+
     </div>
   </div>
 
-  <div class="modal-overlay" id="privacy-modal">
+  <!-- Popup di conferma disattivazione -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content confirm-content">
+      <div class="modal-header">
+        <h2 data-i18n="confirm_title">Disattivare le notifiche?</h2>
+      </div>
+      <div class="modal-body">
+        <p data-i18n="confirm_text">Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?</p>
+      </div>
+      <div class="confirm-buttons">
+        <button class="btn-secondary" onclick="confirmNo()" data-i18n="confirm_no">No, non disattivare le notifiche</button>
+        <button class="btn-danger" onclick="confirmYes()" data-i18n="confirm_yes">Sì, disattiva le notifiche</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup Informativa Privacy -->
+  <div id="privacy-modal" class="modal-overlay" onclick="if(event.target === this) closePrivacy();">
     <div class="modal-content">
       <div class="modal-header">
         <h2 data-i18n="pm_title">Informativa sulla Privacy</h2>
-        <button class="modal-close" onclick="closePrivacy()">&times;</button>
+        <button class="modal-close" onclick="closePrivacy()" aria-label="Chiudi">&times;</button>
       </div>
       <div class="modal-body">
         <h3 data-i18n="pm1_h">Titolare del trattamento</h3>
-        <p data-i18n="pm1_p"></p>
+        <p data-i18n="pm1_p">Il Titolare del trattamento dei dati e responsabile della sicurezza è il <strong>Comune di Toffia</strong>, che gestisce il servizio di notifiche istituzionali oggetto della presente informativa.</p>
 
         <h3 data-i18n="pm2_h">Finalità del servizio</h3>
-        <p data-i18n="pm2_p"></p>
+        <p data-i18n="pm2_p">Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.</p>
 
         <h3 data-i18n="pm3_h">Dati trattati</h3>
-        <p data-i18n="pm3_p1"></p>
-        <p data-i18n="pm3_p2"></p>
+        <p data-i18n="pm3_p1">Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.</p>
+        <p data-i18n="pm3_p2">Gli unici dati tecnici trattati sono il <strong>token del dispositivo</strong> e un <strong>identificativo tecnico anonimo</strong> (generati dal browser), necessari esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.</p>
 
         <h3 data-i18n="pm4_h">Revoca dell'iscrizione</h3>
-        <p data-i18n="pm4_p"></p>
+        <p data-i18n="pm4_p">L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante "Disattiva Notifiche" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.</p>
 
         <h3 data-i18n="pm5_h">Diritti dell'interessato</h3>
-        <p data-i18n="pm5_p"></p>
+        <p data-i18n="pm5_p">Ai sensi del Regolamento (UE) 2016/679 (GDPR), l'utente può esercitare i propri diritti (accesso, cancellazione, limitazione, opposizione) rivolgendosi al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
       </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="confirm-modal">
-    <div class="modal-content confirm-content">
-      <div class="modal-body">
-        <h2 data-i18n="confirm_title">Disattivare le notifiche?</h2>
-        <p data-i18n="confirm_text">Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?</p>
-        <div class="confirm-actions">
-          <button class="btn-secondary" onclick="confirmNo()" data-i18n="confirm_no">No, non disattivare le notifiche</button>
-          <button onclick="confirmYes()" data-i18n="confirm_yes">Sì, disattiva le notifiche</button>
-        </div>
+      <div class="modal-footer">
+        <button onclick="closePrivacy()" data-i18n="pm_close">Chiudi</button>
       </div>
     </div>
   </div>
