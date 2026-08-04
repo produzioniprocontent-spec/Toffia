@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestione Consenso Notifiche Push</title>
+  <title>Comune di Toffia - Centro Notifiche</title>
   
   <!-- SDK OneSignal v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -65,7 +65,6 @@
         statusText.textContent = "Stato attuale: Non iscritto";
         btn.textContent = "Attiva Notifiche / Richiedi Consenso";
         btn.onclick = async () => {
-          // Innesca il popup di OneSignal se non ancora mostrato, oppure fa l'optIn
           if (OneSignal.User.PushSubscription.id) {
             await OneSignal.User.PushSubscription.optIn();
           } else {
@@ -95,10 +94,23 @@
       max-width: 420px;
       text-align: center;
     }
-    h1 {
-      font-size: 1.5rem;
+    .header-title {
+      font-size: 1.6rem;
+      font-weight: 700;
       color: #1a1a1a;
-      margin-bottom: 0.75rem;
+      margin: 0;
+    }
+    .header-subtitle {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #4a5568;
+      margin: 0.25rem 0 0 0;
+    }
+    .header-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #e54b4d;
+      margin: 0.5rem 0 1.5rem 0;
     }
     p {
       color: #666;
@@ -128,8 +140,11 @@
 <body>
 
   <div class="card">
-    <h1>Consenso Notifiche</h1>
-    <p>Gestisci le tue preferenze per la ricezione delle notifiche push in tempo reale.</p>
+    <div class="header-title">Comune di Toffia</div>
+    <div class="header-subtitle">Centro Notifiche</div>
+    <div class="header-number">01</div>
+
+    <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
     
     <div id="status-text" class="status">Verifica stato...</div>
     
