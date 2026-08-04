@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comune di Toffia - Centro Notifiche</title>
-  
+
   <!-- SDK OneSignal v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
@@ -13,6 +13,16 @@
       try {
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
+          promptOptions: {
+            slidedown: {
+              prompts: [
+                {
+                  type: "push",
+                  autoPrompt: false // impedisce lo slidedown automatico di OneSignal
+                }
+              ]
+            }
+          }
         });
 
         // Inizializza lo stato del pulsante
@@ -23,7 +33,12 @@
           updateSubscriptionStatus(OneSignal);
         });
 
-        // Listener sui permessi nativi del browser
+        // Listener sui cambiamenti di permesso (più affidabile dopo il prompt nativo)
+        OneSignal.Notifications.addEventListener("permissionChange", function() {
+          updateSubscriptionStatus(OneSignal);
+        });
+
+        // Listener sui permessi nativi del browser (fallback)
         if (navigator.permissions) {
           const permissionStatus = await navigator.permissions.query({ name: 'notifications' });
           permissionStatus.onchange = function() {
@@ -72,12 +87,15 @@
       } else {
         statusText.textContent = "Stato attuale: Non iscritto";
         btn.textContent = "Attiva Notifiche";
-        
+
+        // Cliccando sul pulsante si innesca la richiesta nativa del browser
         btn.onclick = async () => {
           try {
-            if (OneSignal.User.PushSubscription.id) {
+            if (Notification.permission === "granted" && OneSignal.User.PushSubscription.id) {
+              // Già autorizzato ma disiscritto: basta l'opt-in
               await OneSignal.User.PushSubscription.optIn();
             } else {
+              // Browser mai registrato: mostra il prompt nativo
               await OneSignal.Notifications.requestPermission();
             }
           } catch (e) {
@@ -159,12 +177,12 @@
   <div class="card">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-number">03</div>
+    <div class="header-number">04</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
-    
+
     <div id="status-text" class="status">Verifica stato...</div>
-    
+
     <button id="prompt-button">Caricamento...</button>
   </div>
 
