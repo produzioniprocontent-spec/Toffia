@@ -13,9 +13,6 @@
     let currentLang = "it";         // lingua corrente
 
     // ====== IDENTITÀ STABILE DEL DISPOSITIVO (anti-duplicazione) ======
-    // Genera un ID tecnico anonimo, lo conserva nel browser e lo comunica a OneSignal
-    // come External ID: se il token push viene rigenerato, OneSignal riaggancia
-    // la nuova subscription allo stesso utente invece di crearne uno duplicato.
     const DEVICE_ID_KEY = "toffia-device-id";
     function getOrCreateDeviceId() {
       let id = null;
@@ -147,7 +144,6 @@
       return translations[currentLang][key];
     }
 
-    // Applica la lingua a tutti gli elementi statici e aggiorna quelli dinamici
     function setLanguage(lang) {
       currentLang = lang;
       document.documentElement.lang = lang;
@@ -176,35 +172,28 @@
 
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
-          // Registrazione esplicita del service worker: percorso e ambito.
-          // Il file OneSignalSDKWorker.js DEVE esistere nella root del sito.
+          // Service worker nel repo Toffia, con ambito corretto sul percorso /Toffia/
           serviceWorkerPath: "OneSignalSDKWorker.js",
-          serviceWorkerParam: { scope: "/" }
+          serviceWorkerParam: { scope: "/Toffia/" }
         });
 
-        // ANTI-DUPLICAZIONE: aggancia questa installazione a un'identità stabile.
-        // Se il token push viene rigenerato dal browser, OneSignal riconduce la
-        // nuova subscription allo stesso utente invece di duplicare il dispositivo.
+        // Identità stabile: previene la duplicazione del dispositivo
         try {
           await OneSignal.login(getOrCreateDeviceId());
         } catch (e) {
           console.log("Login identità dispositivo non riuscito:", e);
         }
 
-        // Inizializza lo stato del pulsante
         await updateSubscriptionStatus(OneSignal);
 
-        // Listener sui cambiamenti di iscrizione OneSignal
         OneSignal.User.PushSubscription.addEventListener("change", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
-        // Listener sui cambiamenti di permesso (più affidabile dopo il prompt nativo)
         OneSignal.Notifications.addEventListener("permissionChange", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
-        // Listener sui permessi nativi del browser (fallback)
         if (navigator.permissions) {
           const permissionStatus = await navigator.permissions.query({ name: 'notifications' });
           permissionStatus.onchange = function() {
@@ -212,12 +201,10 @@
           };
         }
 
-        // La checkbox privacy abilita/disabilita il pulsante di iscrizione
         document.getElementById("privacy-check").addEventListener("change", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
-        // Interruttori delle categorie: salvano le preferenze come tag su OneSignal
         document.getElementById("toggle-istituzionali").addEventListener("change", async function() {
           await OneSignal.User.addTag("istituzionali", this.checked ? "1" : "0");
           checkBothTogglesOff(this);
@@ -233,7 +220,6 @@
       }
     });
 
-    // All'avvio: ripristina la lingua salvata (default italiano)
     document.addEventListener("DOMContentLoaded", function() {
       let saved = "it";
       try { saved = localStorage.getItem("toffia-lang") || "it"; } catch (e) {}
@@ -292,8 +278,6 @@
         btn.onclick = async () => {
           if (!privacyCheck.checked) return;
           try {
-            // Ribadisce l'identità stabile prima dell'iscrizione,
-            // così anche i re-opt-in restano agganciati allo stesso utente
             try { await OneSignal.login(getOrCreateDeviceId()); } catch (e) {}
 
             if (Notification.permission === "granted" && OneSignal.User.PushSubscription.id) {
@@ -310,7 +294,6 @@
       }
     }
 
-    // Se entrambi gli interruttori sono spenti, chiede se disattivare del tutto le notifiche
     function checkBothTogglesOff(lastChanged) {
       const t1 = document.getElementById("toggle-istituzionali");
       const t2 = document.getElementById("toggle-eventi");
@@ -320,7 +303,6 @@
       }
     }
 
-    // Allinea gli interruttori ai tag salvati su OneSignal
     async function syncCategoryToggles(OneSignal) {
       try {
         const tags = await OneSignal.User.getTags();
@@ -331,7 +313,6 @@
       }
     }
 
-    // Popup di conferma disattivazione
     function openConfirm() {
       document.getElementById("confirm-modal").style.display = "flex";
       document.body.style.overflow = "hidden";
@@ -369,7 +350,6 @@
       }
     }
 
-    // Gestione popup privacy
     function openPrivacy(event) {
       event.preventDefault();
       document.getElementById("privacy-modal").style.display = "flex";
@@ -381,7 +361,6 @@
       document.body.style.overflow = "";
     }
 
-    // Mostra/nascondi sezione risoluzione problemi
     function toggleTroubleshooting() {
       const content = document.getElementById("troubleshooting-content");
       const arrow = document.getElementById("troubleshooting-arrow");
@@ -405,7 +384,6 @@
       background-color: #f4f4f9;
     }
 
-    /* Barra superiore con selettore lingua */
     .top-bar {
       position: fixed;
       top: 0;
@@ -522,7 +500,6 @@
       cursor: pointer;
     }
 
-    /* Box di approfondimento sulla tutela dei dati */
     .privacy-highlight {
       background: rgba(120, 180, 230, 0.07);
       border: 1px solid rgba(120, 180, 230, 0.35);
@@ -547,7 +524,6 @@
       margin: 0;
     }
 
-    /* Categorie di notifiche */
     .categories-box {
       display: none;
       margin: 0 0 1.5rem 0;
@@ -590,7 +566,6 @@
       margin-top: 1px;
     }
 
-    /* Interruttore a slitta */
     .switch {
       position: relative;
       display: inline-block;
@@ -648,7 +623,6 @@
       cursor: not-allowed;
     }
 
-    /* Sezione risoluzione problemi */
     .troubleshooting {
       background: white;
       border-radius: 12px;
@@ -704,7 +678,6 @@
       margin-top: 0.5rem;
     }
 
-    /* Popup (privacy e conferma) */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -775,7 +748,6 @@
       text-align: right;
     }
 
-    /* Popup di conferma disattivazione */
     .confirm-content {
       max-width: 400px;
       text-align: center;
@@ -845,13 +817,12 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041812</div>
+    <div class="header-version">V202608041900</div>
 
     <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
     <div id="status-text" class="status" data-i18n="checking">Verifica stato...</div>
 
-    <!-- Categorie di notifiche (visibili solo da iscritti) -->
     <div id="categories-box" class="categories-box">
       <div class="categories-title" data-i18n="categories_title">Tipologie di notifiche</div>
 
