@@ -239,12 +239,31 @@
       text-decoration: underline;
       cursor: pointer;
     }
-    .privacy-plain {
-      font-size: 0.8rem;
-      color: #4a8a4a;
-      font-weight: 600;
+
+    /* Box di approfondimento sulla tutela dei dati */
+    .privacy-highlight {
+      background: #f7f9fb;
+      border: 1px solid #e3e8ee;
+      border-left: 4px solid #2f6f4f;
+      border-radius: 0 8px 8px 0;
+      padding: 0.9rem 1.1rem;
       margin: 0 0 1.25rem 0;
-      line-height: 1.45;
+      text-align: left;
+    }
+    .privacy-highlight .highlight-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2f6f4f;
+      margin-bottom: 0.35rem;
+    }
+    .privacy-highlight p {
+      font-size: 0.85rem;
+      color: #3d4852;
+      font-weight: 500;
+      line-height: 1.5;
+      margin: 0;
     }
 
     /* Categorie di notifiche */
@@ -482,7 +501,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041341</div>
+    <div class="header-version">V202608041348</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
@@ -543,7 +562,10 @@
       </label>
     </div>
 
-    <div class="privacy-plain">Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</div>
+    <div class="privacy-highlight">
+      <div class="highlight-title">Tutela dei tuoi dati</div>
+      <p>Non raccogliamo nessun dato personale.<br>Puoi cancellarti in ogni momento con un click.</p>
+    </div>
 
     <button id="prompt-button">Caricamento...</button>
   </div>
@@ -600,9 +622,6 @@
         <h3>Dati trattati</h3>
         <p>Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.</p>
         <p>L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.</p>
-
-        <h3>Come funziona il servizio</h3>
-        <p>I contenuti delle notifiche sono redatti esclusivamente dagli operatori comunali autorizzati tramite un modulo interno (Google Moduli), non accessibile al pubblico. Un servizio di automazione (Make.com) trasferisce il testo della notifica alla piattaforma OneSignal, che la recapita ai dispositivi iscritti. In questo flusso <strong>nessun dato degli utenti iscritti transita su Google Moduli o Make.com</strong>: l'unico soggetto che tratta il token del dispositivo è OneSignal.</p>
 
         <h3>Revoca dell'iscrizione</h3>
         <p>L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante "Disattiva Notifiche" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.</p>
