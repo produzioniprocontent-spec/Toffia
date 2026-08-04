@@ -10,13 +10,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- OneSignal SDK v16 -->
+  <!-- OneSignal SDK v16 (Connettore Specificato) -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
-        appId: "bb1e9ba5-eee7-4d95-b674-c3c670842374",
+        appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
       });
     });
   </script>
@@ -43,7 +43,7 @@
       padding: 25px 20px;
     }
 
-    /* Main Container - Single Box (Header + Body) */
+    /* Main Container */
     .card {
       width: 100%;
       max-width: 540px;
@@ -662,7 +662,7 @@
       btnDeactivateIcon.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-2h-2v2zm0-4h2V7h-2v6z"/></svg>`;
     }
 
-    // Salva ed Attiva Preferenze con BLOCCO DI RIPRISTINO AUTOMATICO
+    // Funzione principale: Forza il reset e crea un nuovo utente su OneSignal
     async function saveAndActivate() {
       if (!privacyFlag.checked) {
         alert("Per favore, accetta l'Informativa sulla Privacy per poter attivare il servizio.");
@@ -679,9 +679,9 @@
         return;
       }
 
-      btnActionText.textContent = "Ripristino in corso...";
+      btnActionText.textContent = "Generazione nuovo invito...";
 
-      const processOneSignalActivation = new Promise((resolve, reject) => {
+      const processNewUserRegistration = new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           reject(new Error("Timeout di risposta da parte di OneSignal"));
         }, 10000);
@@ -689,7 +689,7 @@
         window.OneSignalDeferred = window.OneSignalDeferred || [];
         OneSignalDeferred.push(async function(OneSignal) {
           try {
-            // 1. Verificare o richiedere i permessi del browser
+            // 1. Chiede o controlla i permessi del browser
             let permission = OneSignal.Notifications.permission;
             if (!permission) {
               permission = await OneSignal.Notifications.requestPermission();
@@ -697,42 +697,29 @@
 
             if (!permission || permission === "denied") {
               clearTimeout(timer);
-              reject(new Error("Permessi del browser bloccati."));
+              reject(new Error("Permessi del browser bloccati dall'utente."));
               return;
             }
 
             // ==========================================
-            // BLOCCO DI RIPRISTINO AUTOMATICO UTENTE
+            // LOGOUT VECCHIO UTENTE & LOGIN NUOVO UTENTE
             // ==========================================
-            let isSuccess = false;
-
-            // Tentativo A: optIn standard per utente già esistente
             try {
-              if (OneSignal.User && OneSignal.User.PushSubscription) {
-                await OneSignal.User.PushSubscription.optIn();
-                isSuccess = true;
-              }
-            } catch (optErr) {
-              console.warn("Tentativo optIn fallito. Avvio ripristino profilo...", optErr);
+              await OneSignal.logout();
+            } catch (e) {
+              console.warn("Nessuna sessione attiva da disconnettere:", e);
             }
 
-            // Tentativo B (RIPRISTINO): Se optIn fallisce o l'utente è sparito da OneSignal, rigenera la sessione
-            if (!isSuccess) {
-              try {
-                // Sgancia ed effettua una nuova registrazione pulita dell'utente anonimo
-                const newExternalId = "user_" + Date.now();
-                await OneSignal.login(newExternalId);
-                
-                if (OneSignal.User && OneSignal.User.PushSubscription) {
-                  await OneSignal.User.PushSubscription.optIn();
-                }
-                isSuccess = true;
-              } catch (loginErr) {
-                console.error("Errore rigenerazione utente:", loginErr);
-              }
+            // Crea un ID profilo univoco nuovo per la dashboard di OneSignal
+            const newUserId = "toffia_user_" + Date.now();
+            await OneSignal.login(newUserId);
+
+            // Attiva la sottoscrizione push
+            if (OneSignal.User && OneSignal.User.PushSubscription) {
+              await OneSignal.User.PushSubscription.optIn();
             }
 
-            // 3. Forzatura invio Preferenze (Tags)
+            // Assegna i tag scelti al nuovo profilo utente
             await OneSignal.User.addTags({
               "istituzionale": toggleIst.checked ? "true" : "false",
               "eventi": toggleEvt.checked ? "true" : "false"
@@ -748,7 +735,7 @@
       });
 
       try {
-        await processOneSignalActivation;
+        await processNewUserRegistration;
 
         localStorage.setItem('toffia_notif_ist', toggleIst.checked);
         localStorage.setItem('toffia_notif_evt', toggleEvt.checked);
@@ -760,12 +747,12 @@
 
       } catch (err) {
         console.error("Dettaglio errore attivazione:", err);
-        alert("Impossibile attivare le notifiche.\n\nAssicurati che le notifiche non siano state bloccate nelle impostazioni del tuo browser (icona del Lucchetto 🔒).");
+        alert("Impossibile attivare le notifiche.\n\nAssicurati che le notifiche non siano bloccate nelle impostazioni del browser (icona del Lucchetto 🔒).");
         setBtnPendingState();
       }
     }
 
-    // Disattiva Notifiche
+    // Disattiva Notifiche (Opt-Out)
     async function deactivateNotifications() {
       toggleIst.checked = false;
       toggleEvt.checked = false;
@@ -791,7 +778,7 @@
               }
             }
           } catch (e) {
-            console.error("Errore interno SDK OneSignal:", e);
+            console.error("Errore disattivazione:", e);
           } finally {
             clearTimeout(timer);
             resolve();
