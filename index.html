@@ -13,16 +13,6 @@
       try {
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
-          slidedown: {
-            prompts: [
-              {
-                type: "push",
-                actionMessage: "Vorremmo inviarti notifiche per gli aggiornamenti importanti.",
-                acceptButtonBody: "Consenti",
-                cancelButtonBody: "No grazie"
-              }
-            ]
-          }
         });
 
         // Inizializza lo stato del pulsante
@@ -57,7 +47,6 @@
         return;
       }
 
-      // Controlla il permesso nativo del browser ('granted', 'denied', 'default')
       const permission = Notification.permission;
       const isOptedIn = OneSignal.User.PushSubscription.optedIn;
 
@@ -84,7 +73,6 @@
         statusText.textContent = "Stato attuale: Non iscritto";
         btn.textContent = "Attiva Notifiche";
         
-        // Al click forza l'optIn e la richiesta di permesso al browser
         btn.onclick = async () => {
           try {
             if (OneSignal.User.PushSubscription.id) {
@@ -171,7 +159,7 @@
   <div class="card">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-number">02</div>
+    <div class="header-number">03</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
     
