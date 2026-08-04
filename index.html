@@ -8,9 +8,14 @@
   <!-- SDK OneSignal v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
+    let OneSignalRef = null;        // riferimento globale all'SDK
+    let pendingToggle = null;       // ultimo interruttore spento (per ripristino in caso di "No")
+
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       try {
+        OneSignalRef = OneSignal;
+
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f"
         });
@@ -44,9 +49,11 @@
         // Interruttori delle categorie: salvano le preferenze come tag su OneSignal
         document.getElementById("toggle-istituzionali").addEventListener("change", async function() {
           await OneSignal.User.addTag("istituzionali", this.checked ? "1" : "0");
+          checkBothTogglesOff(this);
         });
         document.getElementById("toggle-eventi").addEventListener("change", async function() {
           await OneSignal.User.addTag("eventi_cultura", this.checked ? "1" : "0");
+          checkBothTogglesOff(this);
         });
 
       } catch (error) {
@@ -94,9 +101,10 @@
         statusText.textContent = "Stato attuale: Iscritto alle notifiche";
         btn.textContent = "Disattiva Notifiche";
         btn.disabled = false;
-        btn.onclick = async () => {
-          await OneSignal.User.PushSubscription.optOut();
-          updateSubscriptionStatus(OneSignal);
+        // La disattivazione richiede conferma
+        btn.onclick = () => {
+          pendingToggle = null;
+          openConfirm();
         };
       } else {
         // Utente non iscritto: mostra la checkbox, nascondi le categorie
@@ -127,6 +135,16 @@
       }
     }
 
+    // Se entrambi gli interruttori sono spenti, chiede se disattivare del tutto le notifiche
+    function checkBothTogglesOff(lastChanged) {
+      const t1 = document.getElementById("toggle-istituzionali");
+      const t2 = document.getElementById("toggle-eventi");
+      if (!t1.checked && !t2.checked) {
+        pendingToggle = lastChanged;
+        openConfirm();
+      }
+    }
+
     // Allinea gli interruttori ai tag salvati su OneSignal
     async function syncCategoryToggles(OneSignal) {
       try {
@@ -136,6 +154,47 @@
         document.getElementById("toggle-eventi").checked = tags?.eventi_cultura !== "0";
       } catch (e) {
         console.log("Impossibile leggere le preferenze categorie:", e);
+      }
+    }
+
+    // Popup di conferma disattivazione
+    function openConfirm() {
+      document.getElementById("confirm-modal").style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeConfirm() {
+      document.getElementById("confirm-modal").style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    // "No, non disattivare": chiude il popup e, se il dubbio nasceva dagli interruttori,
+    // riaccende l'ultimo interruttore spento ripristinando il relativo tag
+    async function confirmNo() {
+      closeConfirm();
+      if (pendingToggle && OneSignalRef) {
+        pendingToggle.checked = true;
+        const tagName = pendingToggle.id === "toggle-istituzionali" ? "istituzionali" : "eventi_cultura";
+        try {
+          await OneSignalRef.User.addTag(tagName, "1");
+        } catch (e) {
+          console.log("Impossibile ripristinare la preferenza:", e);
+        }
+        pendingToggle = null;
+      }
+    }
+
+    // "Sì, disattiva": esegue la disiscrizione completa
+    async function confirmYes() {
+      closeConfirm();
+      pendingToggle = null;
+      if (OneSignalRef) {
+        try {
+          await OneSignalRef.User.PushSubscription.optOut();
+        } catch (e) {
+          console.log("Disattivazione non riuscita:", e);
+        }
+        updateSubscriptionStatus(OneSignalRef);
       }
     }
 
@@ -422,7 +481,7 @@
       margin-top: 0.5rem;
     }
 
-    /* Popup privacy */
+    /* Popup (privacy e conferma) */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -492,6 +551,47 @@
       border-top: 1px solid #eee;
       text-align: right;
     }
+
+    /* Popup di conferma disattivazione */
+    .confirm-content {
+      max-width: 400px;
+      text-align: center;
+    }
+    .confirm-content .modal-body {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .confirm-content .modal-body p {
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .confirm-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+    .btn-secondary {
+      background-color: #ffffff;
+      color: #e54b4d;
+      border: 2px solid #e54b4d;
+      font-weight: 600;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background-color: #fdf3f3;
+      color: #c93b3d;
+      border-color: #c93b3d;
+    }
+    .btn-danger {
+      background-color: #ffffff;
+      color: #888;
+      border: 1px solid #ddd;
+      font-weight: 500;
+    }
+    .btn-danger:hover:not(:disabled) {
+      background-color: #f5f5f5;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -500,7 +600,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041404</div>
+    <div class="header-version">V202608041416</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
@@ -601,6 +701,22 @@
       <h3>Il problema persiste</h3>
       <p>Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
 
+    </div>
+  </div>
+
+  <!-- Popup di conferma disattivazione -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content confirm-content">
+      <div class="modal-header">
+        <h2>Disattivare le notifiche?</h2>
+      </div>
+      <div class="modal-body">
+        <p>Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?</p>
+      </div>
+      <div class="confirm-buttons">
+        <button class="btn-secondary" onclick="confirmNo()">No, non disattivare le notifiche</button>
+        <button class="btn-danger" onclick="confirmYes()">Sì, disattiva le notifiche</button>
+      </div>
     </div>
   </div>
 
