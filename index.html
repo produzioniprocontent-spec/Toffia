@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestione Consenso Notifiche Push</title>
+  
+  <!-- SDK OneSignal v16 -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
+        // Mostra automaticamente il popup di richiesta consenso all'arrivo
+        slidedown: {
+          prompts: [
+            {
+              type: "push",
+              actionMessage: "Vorremmo inviarti notifiche per gli aggiornamenti importanti.",
+              acceptButtonBody: "Consenti",
+              cancelButtonBody: "No grazie"
+            }
+          ]
+        }
+      });
+
+      // Aggiorna la UI in base allo stato iniziale di iscrizione
+      updateSubscriptionStatus(OneSignal);
+
+      // Listener per aggiornare l'interfaccia quando lo stato cambia
+      OneSignal.User.PushSubscription.addEventListener("change", function() {
+        updateSubscriptionStatus(OneSignal);
+      });
+    });
+
+    // Funzione helper per gestire lo stato del pulsante nella pagina
+    async function updateSubscriptionStatus(OneSignal) {
+      const btn = document.getElementById("prompt-button");
+      const statusText = document.getElementById("status-text");
+      const isSubscribed = OneSignal.User.PushSubscription.optedIn;
+
+      if (isSubscribed) {
+        statusText.textContent = "Stato attuale: Iscritto alle notifiche";
+        btn.textContent = "Disattiva Notifiche";
+        btn.onclick = () => OneSignal.User.PushSubscription.optOut();
+      } else {
+        statusText.textContent = "Stato attuale: Non iscritto";
+        btn.textContent = "Attiva Notifiche";
+        btn.onclick = () => OneSignal.User.PushSubscription.optIn();
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+    .card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      max-width: 420px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: #1a1a1a;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #666;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .status {
+      margin: 1.5rem 0;
+      font-weight: 600;
+      color: #333;
+    }
+    button {
+      background-color: #e54b4d;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #c93b3d;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Consenso Notifiche</h1>
+    <p>Gestisci le tue preferenze per la ricezione delle notifiche push in tempo reale.</p>
+    
+    <div id="status-text" class="status">Verifica stato...</div>
+    
+    <button id="prompt-button">Caricamento...</button>
+  </div>
+
+</body>
+</html>
