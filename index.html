@@ -36,6 +36,11 @@
           };
         }
 
+        // La checkbox privacy abilita/disabilita il pulsante di iscrizione
+        document.getElementById("privacy-check").addEventListener("change", function() {
+          updateSubscriptionStatus(OneSignal);
+        });
+
       } catch (error) {
         console.error("Errore di inizializzazione OneSignal:", error);
         document.getElementById("status-text").textContent = "Errore durante il caricamento.";
@@ -45,10 +50,13 @@
     async function updateSubscriptionStatus(OneSignal) {
       const btn = document.getElementById("prompt-button");
       const statusText = document.getElementById("status-text");
+      const privacyBox = document.getElementById("privacy-box");
+      const privacyCheck = document.getElementById("privacy-check");
 
       if (!OneSignal.Notifications.isPushSupported()) {
         statusText.textContent = "Le notifiche push non sono supportate da questo browser.";
         btn.style.display = "none";
+        privacyBox.style.display = "none";
         return;
       }
 
@@ -61,25 +69,32 @@
         btn.textContent = "Notifiche Bloccate";
         btn.disabled = true;
         btn.onclick = null;
+        privacyBox.style.display = "none";
         return;
       }
 
       statusText.style.color = "#333";
-      btn.disabled = false;
 
       if (isOptedIn) {
+        // Utente già iscritto: nascondi la checkbox, consenti la disattivazione
+        privacyBox.style.display = "none";
         statusText.textContent = "Stato attuale: Iscritto alle notifiche";
         btn.textContent = "Disattiva Notifiche";
+        btn.disabled = false;
         btn.onclick = async () => {
           await OneSignal.User.PushSubscription.optOut();
           updateSubscriptionStatus(OneSignal);
         };
       } else {
+        // Utente non iscritto: mostra la checkbox, il pulsante si attiva solo col consenso
+        privacyBox.style.display = "block";
         statusText.textContent = "Stato attuale: Non iscritto";
         btn.textContent = "Attiva Notifiche";
+        btn.disabled = !privacyCheck.checked;
 
         // Cliccando sul pulsante si innesca la richiesta nativa del browser
         btn.onclick = async () => {
+          if (!privacyCheck.checked) return;
           try {
             if (Notification.permission === "granted" && OneSignal.User.PushSubscription.id) {
               // Già autorizzato ma disiscritto: basta l'opt-in
@@ -95,16 +110,40 @@
         };
       }
     }
+
+    // Gestione popup privacy
+    function openPrivacy(event) {
+      event.preventDefault();
+      document.getElementById("privacy-modal").style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closePrivacy() {
+      document.getElementById("privacy-modal").style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    // Mostra/nascondi sezione risoluzione problemi
+    function toggleTroubleshooting() {
+      const content = document.getElementById("troubleshooting-content");
+      const arrow = document.getElementById("troubleshooting-arrow");
+      const isOpen = content.style.display === "block";
+      content.style.display = isOpen ? "none" : "block";
+      arrow.textContent = isOpen ? "▸" : "▾";
+    }
   </script>
 
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
       background-color: #f4f4f9;
     }
     .card {
@@ -114,6 +153,11 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       max-width: 420px;
       text-align: center;
+    }
+    .logo {
+      max-width: 110px;
+      height: auto;
+      margin-bottom: 1rem;
     }
     .header-title {
       font-size: 1.6rem;
@@ -143,6 +187,29 @@
       font-weight: 600;
       color: #333;
     }
+    .privacy-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      text-align: left;
+      margin: 0 0 1.25rem 0;
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .privacy-box input[type="checkbox"] {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      accent-color: #e54b4d;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .privacy-box a {
+      color: #e54b4d;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+    }
     button {
       background-color: #e54b4d;
       color: white;
@@ -160,11 +227,139 @@
       background-color: #ccc;
       cursor: not-allowed;
     }
+
+    /* Sezione risoluzione problemi */
+    .troubleshooting {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      max-width: 420px;
+      width: 100%;
+      margin-top: 1.5rem;
+      box-sizing: border-box;
+      text-align: left;
+      overflow: hidden;
+    }
+    .troubleshooting-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 1.1rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 700;
+      color: #1a1a1a;
+      font-size: 1rem;
+    }
+    .troubleshooting-header:hover {
+      background: #fafafa;
+    }
+    .troubleshooting-arrow {
+      color: #e54b4d;
+      font-size: 1.1rem;
+    }
+    .troubleshooting-content {
+      display: none;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+    }
+    .troubleshooting-content h3 {
+      font-size: 0.95rem;
+      color: #1a1a1a;
+      margin: 1.25rem 0 0.35rem 0;
+    }
+    .troubleshooting-content h3:first-child {
+      margin-top: 0;
+    }
+    .troubleshooting-content p {
+      font-size: 0.88rem;
+      color: #555;
+      margin: 0.35rem 0;
+      line-height: 1.55;
+    }
+    .troubleshooting-note {
+      background: #fdf3f3;
+      border-left: 3px solid #e54b4d;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      margin-top: 0.5rem;
+    }
+
+    /* Popup privacy */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #1a1a1a;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      line-height: 1;
+      color: #888;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .modal-close:hover {
+      color: #333;
+      background: none;
+    }
+    .modal-body {
+      padding: 1.25rem 1.5rem;
+      overflow-y: auto;
+      text-align: left;
+    }
+    .modal-body h3 {
+      font-size: 1rem;
+      color: #1a1a1a;
+      margin: 1.25rem 0 0.4rem 0;
+    }
+    .modal-body h3:first-child {
+      margin-top: 0;
+    }
+    .modal-body p {
+      font-size: 0.9rem;
+      color: #555;
+      margin: 0.4rem 0;
+    }
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #eee;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
 
   <div class="card">
+    <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
     <div class="header-number">06</div>
@@ -173,7 +368,82 @@
 
     <div id="status-text" class="status">Verifica stato...</div>
 
+    <div id="privacy-box" class="privacy-box" style="display:none;">
+      <input type="checkbox" id="privacy-check">
+      <label for="privacy-check">
+        Ho letto e accetto l'<a onclick="openPrivacy(event)">Informativa sulla Privacy</a> relativa al servizio di notifiche.
+      </label>
+    </div>
+
     <button id="prompt-button">Caricamento...</button>
+  </div>
+
+  <!-- Sezione Risoluzione dei problemi -->
+  <div class="troubleshooting">
+    <div class="troubleshooting-header" onclick="toggleTroubleshooting()">
+      <span id="troubleshooting-arrow" class="troubleshooting-arrow">▸</span>
+      Risoluzione dei problemi
+    </div>
+    <div id="troubleshooting-content" class="troubleshooting-content">
+
+      <h3>Il pulsante indica "Notifiche Bloccate"</h3>
+      <p>Il browser ha memorizzato un rifiuto precedente per questo sito. Per sbloccare: cliccare sull'icona del <strong>lucchetto</strong> (o delle impostazioni) accanto all'indirizzo nella barra di navigazione, individuare la voce <strong>Notifiche</strong> e impostarla su "Chiedi" o "Consenti", quindi ricaricare la pagina.</p>
+
+      <h3>La richiesta di autorizzazione non compare</h3>
+      <p>Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i "Bloccati". Percorsi analoghi sono disponibili in Firefox ed Edge.</p>
+
+      <h3>Le notifiche risultano attive ma non arrivano</h3>
+      <p>Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come "Non disturbare" o "Concentrazione".</p>
+
+      <h3>Utilizzo in modalità di navigazione privata</h3>
+      <p>In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.</p>
+
+      <h3>Utenti del browser Brave</h3>
+      <div class="troubleshooting-note">
+        <p>Il browser <strong>Brave</strong>, per impostazione predefinita, tende a bloccare le notifiche push e i servizi che le veicolano (inclusa la tecnologia Google necessaria al loro recapito). Se si utilizza Brave e l'iscrizione non va a buon fine, è consigliabile utilizzare un browser più adatto al servizio, come Chrome, Firefox o Edge.</p>
+        <p>In alternativa, gli utenti esperti possono configurare Brave manualmente: aprire <em>brave://settings/privacy</em> e attivare l'opzione <strong>"Usa i servizi Google per la messaggistica push"</strong>, riavviare il browser, quindi verificare che gli <strong>Shields</strong> (icona del leone nella barra degli indirizzi) non blocchino elementi di questa pagina e che le notifiche per questo sito siano consentite in <em>brave://settings/content/notifications</em>.</p>
+      </div>
+
+      <h3>Dispositivi mobili</h3>
+      <p>Su <strong>Android</strong> il servizio funziona con i principali browser (Chrome, Firefox, Edge). Su <strong>iPhone e iPad</strong> (iOS 16.4 o successivo) è necessario prima aggiungere questa pagina alla schermata Home tramite il menu di condivisione di Safari ("Aggiungi a Home"), quindi aprirla dall'icona creata ed effettuare l'iscrizione da lì.</p>
+
+      <h3>Il problema persiste</h3>
+      <p>Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
+
+    </div>
+  </div>
+
+  <!-- Popup Informativa Privacy -->
+  <div id="privacy-modal" class="modal-overlay" onclick="if(event.target === this) closePrivacy();">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Informativa sulla Privacy</h2>
+        <button class="modal-close" onclick="closePrivacy()" aria-label="Chiudi">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>Titolare del trattamento</h3>
+        <p>Il Titolare del trattamento dei dati e responsabile della sicurezza è il <strong>Comune di Toffia</strong>, che gestisce il servizio di notifiche istituzionali oggetto della presente informativa.</p>
+
+        <h3>Finalità del servizio</h3>
+        <p>Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.</p>
+
+        <h3>Dati trattati</h3>
+        <p>Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.</p>
+        <p>L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche. Tale token è gestito dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio.</p>
+
+        <h3>Come funziona il servizio</h3>
+        <p>I contenuti delle notifiche sono redatti esclusivamente dagli operatori comunali autorizzati tramite un modulo interno (Google Moduli), non accessibile al pubblico. Un servizio di automazione (Make.com) trasferisce il testo della notifica alla piattaforma OneSignal, che la recapita ai dispositivi iscritti. In questo flusso <strong>nessun dato degli utenti iscritti transita su Google Moduli o Make.com</strong>: l'unico soggetto che tratta il token del dispositivo è OneSignal.</p>
+
+        <h3>Revoca dell'iscrizione</h3>
+        <p>L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante "Disattiva Notifiche" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. La disattivazione comporta la cessazione immediata dell'invio.</p>
+
+        <h3>Diritti dell'interessato</h3>
+        <p>Ai sensi del Regolamento (UE) 2016/679 (GDPR), l'utente può esercitare i propri diritti (accesso, cancellazione, limitazione, opposizione) rivolgendosi al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closePrivacy()">Chiudi</button>
+      </div>
+    </div>
   </div>
 
 </body>
