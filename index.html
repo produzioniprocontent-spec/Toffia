@@ -8,9 +8,9 @@
   <!-- SDK OneSignal v16 -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    let OneSignalRef = null;        // riferimento globale all'SDK
-    let pendingToggle = null;       // ultimo interruttore spento (per ripristino in caso di "No")
-    let currentLang = "it";         // lingua corrente
+    let OneSignalRef = null;
+    let pendingToggle = null;
+    let currentLang = "it";
 
     // ====== IDENTITÀ STABILE DEL DISPOSITIVO (anti-duplicazione) ======
     const DEVICE_ID_KEY = "toffia-device-id";
@@ -26,6 +26,43 @@
       return id;
     }
 
+    // ====== VERIFICA ONESTA DELL'ISCRIZIONE ======
+    // Non si fida del solo flag locale: controlla la catena reale.
+    // Ritorna: "subscribed" | "invalid" (locale dice sì ma la catena è rotta) | "unsubscribed"
+    async function verifyRealSubscription(OneSignal) {
+      const permission = Notification.permission;
+      const localOptedIn = OneSignal.User.PushSubscription.optedIn;
+
+      if (permission !== "granted") {
+        return localOptedIn ? "invalid" : "unsubscribed";
+      }
+
+      let chainOk = true;
+
+      // 1. Service worker registrato per questo ambito?
+      try {
+        const reg = await navigator.serviceWorker.getRegistration("/Toffia/");
+        if (!reg) {
+          chainOk = false;
+        } else {
+          // 2. Push subscription reale presente nel browser?
+          const pushSub = await reg.pushManager.getSubscription();
+          if (!pushSub) chainOk = false;
+        }
+      } catch (e) {
+        chainOk = false;
+      }
+
+      // 3. L'SDK ha ID e token validi?
+      const osId = OneSignal.User.PushSubscription.id;
+      const token = OneSignal.User.PushSubscription.token;
+      if (!osId || !token) chainOk = false;
+
+      if (localOptedIn && chainOk) return "subscribed";
+      if (localOptedIn && !chainOk) return "invalid";
+      return "unsubscribed";
+    }
+
     // ====== TRADUZIONI ======
     const translations = {
       it: {
@@ -39,6 +76,7 @@
         blocked_btn: "Notifiche Bloccate",
         subscribed_status: "Stato attuale: Iscritto alle notifiche",
         unsubscribed_status: "Stato attuale: Non iscritto",
+        invalid_status: "Iscrizione non valida: riattiva le notifiche per ripristinare il servizio.",
         activate_btn: "Attiva Notifiche",
         deactivate_btn: "Disattiva Notifiche",
         categories_title: "Tipologie di notifiche",
@@ -94,6 +132,7 @@
         blocked_btn: "Notifications Blocked",
         subscribed_status: "Current status: Subscribed to notifications",
         unsubscribed_status: "Current status: Not subscribed",
+        invalid_status: "Subscription not valid: re-enable notifications to restore the service.",
         activate_btn: "Enable Notifications",
         deactivate_btn: "Disable Notifications",
         categories_title: "Notification types",
@@ -147,7 +186,6 @@
     function setLanguage(lang) {
       currentLang = lang;
       document.documentElement.lang = lang;
-
       try { localStorage.setItem("toffia-lang", lang); } catch (e) {}
 
       document.querySelectorAll("[data-i18n]").forEach(function(el) {
@@ -172,12 +210,10 @@
 
         await OneSignal.init({
           appId: "9ec5caf0-eac5-4869-8fd4-85277997218f",
-          // Service worker nel repo Toffia, con ambito corretto sul percorso /Toffia/
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerParam: { scope: "/Toffia/" }
         });
 
-        // Identità stabile: previene la duplicazione del dispositivo
         try {
           await OneSignal.login(getOrCreateDeviceId());
         } catch (e) {
@@ -242,7 +278,6 @@
       }
 
       const permission = Notification.permission;
-      const isOptedIn = OneSignal.User.PushSubscription.optedIn;
 
       if (permission === "denied") {
         statusText.textContent = t("blocked_status");
@@ -255,9 +290,11 @@
         return;
       }
 
-      statusText.style.color = "#333";
+      // Verifica onesta: interroga la catena reale, non solo il flag locale
+      const realState = await verifyRealSubscription(OneSignal);
 
-      if (isOptedIn) {
+      if (realState === "subscribed") {
+        statusText.style.color = "#333";
         privacyBox.style.display = "none";
         categoriesBox.style.display = "block";
         await syncCategoryToggles(OneSignal);
@@ -269,9 +306,17 @@
           openConfirm();
         };
       } else {
+        // "unsubscribed" oppure "invalid": in entrambi i casi serve (ri)attivare
+        if (realState === "invalid") {
+          statusText.textContent = t("invalid_status");
+          statusText.style.color = "#c77700"; // arancione: locale e realtà divergono
+        } else {
+          statusText.textContent = t("unsubscribed_status");
+          statusText.style.color = "#333";
+        }
+
         privacyBox.style.display = "flex";
         categoriesBox.style.display = "none";
-        statusText.textContent = t("unsubscribed_status");
         btn.textContent = t("activate_btn");
         btn.disabled = !privacyCheck.checked;
 
@@ -817,7 +862,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041900</div>
+    <div class="header-version">V202608041930</div>
 
     <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
