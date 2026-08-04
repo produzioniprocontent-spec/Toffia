@@ -25,18 +25,25 @@
           }
         });
 
-        // Forza l'aggiornamento dello stato iniziale
+        // Inizializza lo stato del pulsante
         await updateSubscriptionStatus(OneSignal);
 
-        // Ascolta i cambiamenti di stato dell'iscrizione
+        // Listener sui cambiamenti di iscrizione OneSignal
         OneSignal.User.PushSubscription.addEventListener("change", function() {
           updateSubscriptionStatus(OneSignal);
         });
 
+        // Listener sui permessi nativi del browser
+        if (navigator.permissions) {
+          const permissionStatus = await navigator.permissions.query({ name: 'notifications' });
+          permissionStatus.onchange = function() {
+            updateSubscriptionStatus(OneSignal);
+          };
+        }
+
       } catch (error) {
-        console.error("Errore durante l'inizializzazione di OneSignal:", error);
-        document.getElementById("status-text").textContent = "Errore di caricamento o HTTPS non attivo";
-        document.getElementById("prompt-button").textContent = "Errore";
+        console.error("Errore di inizializzazione OneSignal:", error);
+        document.getElementById("status-text").textContent = "Errore durante il caricamento.";
       }
     });
 
@@ -44,15 +51,27 @@
       const btn = document.getElementById("prompt-button");
       const statusText = document.getElementById("status-text");
 
-      // Verifichiamo se il browser supporta le notifiche push
       if (!OneSignal.Notifications.isPushSupported()) {
-        statusText.textContent = "Le notifiche push non sono supportate su questo browser.";
+        statusText.textContent = "Le notifiche push non sono supportate da questo browser.";
         btn.style.display = "none";
         return;
       }
 
-      // Otteniamo lo stato attuale di iscrizione
+      // Controlla il permesso nativo del browser ('granted', 'denied', 'default')
+      const permission = Notification.permission;
       const isOptedIn = OneSignal.User.PushSubscription.optedIn;
+
+      if (permission === "denied") {
+        statusText.textContent = "Notifiche bloccate nel browser. Abilitale nelle impostazioni del sito.";
+        statusText.style.color = "#d9534f";
+        btn.textContent = "Notifiche Bloccate";
+        btn.disabled = true;
+        btn.onclick = null;
+        return;
+      }
+
+      statusText.style.color = "#333";
+      btn.disabled = false;
 
       if (isOptedIn) {
         statusText.textContent = "Stato attuale: Iscritto alle notifiche";
@@ -63,12 +82,18 @@
         };
       } else {
         statusText.textContent = "Stato attuale: Non iscritto";
-        btn.textContent = "Attiva Notifiche / Richiedi Consenso";
+        btn.textContent = "Attiva Notifiche";
+        
+        // Al click forza l'optIn e la richiesta di permesso al browser
         btn.onclick = async () => {
-          if (OneSignal.User.PushSubscription.id) {
-            await OneSignal.User.PushSubscription.optIn();
-          } else {
-            await OneSignal.Slidedown.promptPush();
+          try {
+            if (OneSignal.User.PushSubscription.id) {
+              await OneSignal.User.PushSubscription.optIn();
+            } else {
+              await OneSignal.Notifications.requestPermission();
+            }
+          } catch (e) {
+            console.log("Richiesta permesso fallita o annullata dall'utente:", e);
           }
           updateSubscriptionStatus(OneSignal);
         };
@@ -132,8 +157,12 @@
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-    button:hover {
+    button:hover:not(:disabled) {
       background-color: #c93b3d;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -142,7 +171,7 @@
   <div class="card">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-number">01</div>
+    <div class="header-number">02</div>
 
     <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
     
