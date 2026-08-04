@@ -10,6 +10,150 @@
   <script>
     let OneSignalRef = null;        // riferimento globale all'SDK
     let pendingToggle = null;       // ultimo interruttore spento (per ripristino in caso di "No")
+    let currentLang = "it";         // lingua corrente
+
+    // ====== TRADUZIONI ======
+    const translations = {
+      it: {
+        subtitle: "Centro Notifiche",
+        intro: "Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.",
+        checking: "Verifica stato...",
+        loading_btn: "Caricamento...",
+        load_error: "Errore durante il caricamento.",
+        not_supported: "Le notifiche push non sono supportate da questo browser.",
+        blocked_status: "Notifiche bloccate nel browser. Abilitale nelle impostazioni del sito.",
+        blocked_btn: "Notifiche Bloccate",
+        subscribed_status: "Stato attuale: Iscritto alle notifiche",
+        unsubscribed_status: "Stato attuale: Non iscritto",
+        activate_btn: "Attiva Notifiche",
+        deactivate_btn: "Disattiva Notifiche",
+        categories_title: "Tipologie di notifiche",
+        cat1_name: "Istituzionali e Servizio",
+        cat1_desc: "Avvisi ufficiali, scadenze, servizi comunali",
+        cat2_name: "Eventi e Cultura",
+        cat2_desc: "Manifestazioni, iniziative culturali, appuntamenti",
+        privacy_label: "Ho letto e accetto l'<a onclick=\"openPrivacy(event)\">Informativa sulla Privacy</a> relativa al servizio di notifiche.",
+        highlight_title: "Tutela dei tuoi dati",
+        highlight_text: "Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.",
+        ts_header: "Risoluzione dei problemi",
+        ts1_h: "Il pulsante indica \"Notifiche Bloccate\"",
+        ts1_p: "Il browser ha memorizzato un rifiuto precedente per questo sito. Per sbloccare: cliccare sull'icona del <strong>lucchetto</strong> (o delle impostazioni) accanto all'indirizzo nella barra di navigazione, individuare la voce <strong>Notifiche</strong> e impostarla su \"Chiedi\" o \"Consenti\", quindi ricaricare la pagina.",
+        ts2_h: "La richiesta di autorizzazione non compare",
+        ts2_p: "Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i \"Bloccati\". Percorsi analoghi sono disponibili in Firefox ed Edge.",
+        ts3_h: "Le notifiche risultano attive ma non arrivano",
+        ts3_p: "Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come \"Non disturbare\" o \"Concentrazione\".",
+        ts4_h: "Utilizzo in modalità di navigazione privata",
+        ts4_p: "In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.",
+        ts5_h: "Utenti del browser Brave",
+        ts5_p1: "Il browser <strong>Brave</strong>, per impostazione predefinita, tende a bloccare le notifiche push e i servizi che le veicolano (inclusa la tecnologia Google necessaria al loro recapito). Se si utilizza Brave e l'iscrizione non va a buon fine, è consigliabile utilizzare un browser più adatto al servizio, come Chrome, Firefox o Edge.",
+        ts5_p2: "In alternativa, gli utenti esperti possono configurare Brave manualmente: aprire <em>brave://settings/privacy</em> e attivare l'opzione <strong>\"Usa i servizi Google per la messaggistica push\"</strong>, riavviare il browser, quindi verificare che gli <strong>Shields</strong> (icona del leone nella barra degli indirizzi) non blocchino elementi di questa pagina e che le notifiche per questo sito siano consentite in <em>brave://settings/content/notifications</em>.",
+        ts6_h: "Dispositivi mobili",
+        ts6_p: "Su <strong>Android</strong> il servizio funziona con i principali browser (Chrome, Firefox, Edge). Su <strong>iPhone e iPad</strong> (iOS 16.4 o successivo) è necessario prima aggiungere questa pagina alla schermata Home tramite il menu di condivisione di Safari (\"Aggiungi a Home\"), quindi aprirla dall'icona creata ed effettuare l'iscrizione da lì.",
+        ts7_h: "Il problema persiste",
+        ts7_p: "Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.",
+        confirm_title: "Disattivare le notifiche?",
+        confirm_text: "Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?",
+        confirm_no: "No, non disattivare le notifiche",
+        confirm_yes: "Sì, disattiva le notifiche",
+        pm_title: "Informativa sulla Privacy",
+        pm1_h: "Titolare del trattamento",
+        pm1_p: "Il Titolare del trattamento dei dati e responsabile della sicurezza è il <strong>Comune di Toffia</strong>, che gestisce il servizio di notifiche istituzionali oggetto della presente informativa.",
+        pm2_h: "Finalità del servizio",
+        pm2_p: "Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.",
+        pm3_h: "Dati trattati",
+        pm3_p1: "Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.",
+        pm3_p2: "L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.",
+        pm4_h: "Revoca dell'iscrizione",
+        pm4_p: "L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante \"Disattiva Notifiche\" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.",
+        pm5_h: "Diritti dell'interessato",
+        pm5_p: "Ai sensi del Regolamento (UE) 2016/679 (GDPR), l'utente può esercitare i propri diritti (accesso, cancellazione, limitazione, opposizione) rivolgendosi al Comune di Toffia attraverso i canali istituzionali dell'Ente.",
+        pm_close: "Chiudi"
+      },
+      en: {
+        subtitle: "Notification Center",
+        intro: "Manage your preferences for receiving official communications in real time.",
+        checking: "Checking status...",
+        loading_btn: "Loading...",
+        load_error: "An error occurred while loading.",
+        not_supported: "Push notifications are not supported by this browser.",
+        blocked_status: "Notifications are blocked in your browser. Enable them in the site settings.",
+        blocked_btn: "Notifications Blocked",
+        subscribed_status: "Current status: Subscribed to notifications",
+        unsubscribed_status: "Current status: Not subscribed",
+        activate_btn: "Enable Notifications",
+        deactivate_btn: "Disable Notifications",
+        categories_title: "Notification types",
+        cat1_name: "Official & Services",
+        cat1_desc: "Official notices, deadlines, municipal services",
+        cat2_name: "Events & Culture",
+        cat2_desc: "Events, cultural initiatives, appointments",
+        privacy_label: "I have read and accept the <a onclick=\"openPrivacy(event)\">Privacy Policy</a> for the notification service.",
+        highlight_title: "Protection of your data",
+        highlight_text: "We do not collect any personal data. You can unsubscribe at any time with one click.",
+        ts_header: "Troubleshooting",
+        ts1_h: "The button shows \"Notifications Blocked\"",
+        ts1_p: "Your browser has stored a previous refusal for this site. To unblock: click the <strong>padlock</strong> (or settings) icon next to the address in the navigation bar, find the <strong>Notifications</strong> item and set it to \"Ask\" or \"Allow\", then reload the page.",
+        ts2_h: "The permission request does not appear",
+        ts2_p: "Check that your browser does not block notifications globally. In Chrome: <em>Settings → Privacy and security → Site settings → Notifications</em>; make sure the global block option is not enabled and that this site is not listed under \"Blocked\". Similar paths are available in Firefox and Edge.",
+        ts3_h: "Notifications are enabled but do not arrive",
+        ts3_p: "Check your <strong>operating system</strong> settings: on Windows (<em>Settings → System → Notifications</em>) and on macOS (<em>Settings → Notifications</em>) browser notifications may be disabled or silenced. Also check that modes such as \"Do Not Disturb\" or \"Focus\" are not active.",
+        ts4_h: "Using private browsing mode",
+        ts4_p: "In incognito or private browsing mode, push notifications are generally not supported. Please subscribe from a normal browsing window.",
+        ts5_h: "Brave browser users",
+        ts5_p1: "The <strong>Brave</strong> browser, by default, tends to block push notifications and the services that deliver them (including the Google technology required for delivery). If you use Brave and the subscription fails, we recommend using a browser better suited to this service, such as Chrome, Firefox or Edge.",
+        ts5_p2: "Alternatively, advanced users can configure Brave manually: open <em>brave://settings/privacy</em> and enable the option <strong>\"Use Google services for push messaging\"</strong>, restart the browser, then check that the <strong>Shields</strong> (lion icon in the address bar) are not blocking elements of this page and that notifications for this site are allowed in <em>brave://settings/content/notifications</em>.",
+        ts6_h: "Mobile devices",
+        ts6_p: "On <strong>Android</strong> the service works with all major browsers (Chrome, Firefox, Edge). On <strong>iPhone and iPad</strong> (iOS 16.4 or later) you must first add this page to your Home Screen via Safari's share menu (\"Add to Home Screen\"), then open it from the created icon and subscribe from there.",
+        ts7_h: "The problem persists",
+        ts7_p: "Try reloading the page with a forced refresh (Ctrl+F5 on a computer), or repeat the operation with a different browser. If difficulties continue, you can report the problem to the Municipality of Toffia through the institution's official channels.",
+        confirm_title: "Disable notifications?",
+        confirm_text: "You are about to disable notifications from the Municipality of Toffia. You will no longer receive any communications on this device. Do you want to proceed?",
+        confirm_no: "No, keep notifications enabled",
+        confirm_yes: "Yes, disable notifications",
+        pm_title: "Privacy Policy",
+        pm1_h: "Data controller",
+        pm1_p: "The Data Controller and party responsible for security is the <strong>Municipality of Toffia</strong>, which manages the official notification service covered by this policy.",
+        pm2_h: "Purpose of the service",
+        pm2_p: "The service allows you to receive push notifications on your device regarding official communications, notices and public-interest information from the Municipality of Toffia. Subscription is optional and takes place exclusively at the user's initiative.",
+        pm3_h: "Data processed",
+        pm3_p1: "For the provision of the service, <strong>no identifying personal data is collected</strong>: no name, surname, e-mail address, telephone number or any other reference to the person.",
+        pm3_p2: "The only technical data processed is the <strong>device token</strong> (an anonymous technical identifier generated by the browser), required solely for delivering notifications, together with the <strong>notification type preferences</strong> selected by the user on this page. These data are managed by the <strong>OneSignal</strong> platform, the technical provider of the delivery service, and cannot be traced back to the person.",
+        pm4_h: "Withdrawing your subscription",
+        pm4_p: "You can disable notifications at any time using the \"Disable Notifications\" button on this page, or by revoking the notification permission in your browser settings. You can also disable individual notification types using the dedicated switches. Disabling results in the immediate cessation of delivery.",
+        pm5_h: "Rights of the data subject",
+        pm5_p: "Pursuant to Regulation (EU) 2016/679 (GDPR), you may exercise your rights (access, erasure, restriction, objection) by contacting the Municipality of Toffia through the institution's official channels.",
+        pm_close: "Close"
+      }
+    };
+
+    function t(key) {
+      return translations[currentLang][key];
+    }
+
+    // Applica la lingua a tutti gli elementi statici e aggiorna quelli dinamici
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      try { localStorage.setItem("toffia-lang", lang); } catch (e) {}
+
+      // Elementi statici marcati con data-i18n
+      document.querySelectorAll("[data-i18n]").forEach(function(el) {
+        const key = el.getAttribute("data-i18n");
+        if (translations[lang][key] !== undefined) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+
+      // Evidenzia il selettore attivo
+      document.getElementById("lang-it").classList.toggle("active", lang === "it");
+      document.getElementById("lang-en").classList.toggle("active", lang === "en");
+
+      // Aggiorna i testi dinamici (stato e pulsante)
+      if (OneSignalRef) {
+        updateSubscriptionStatus(OneSignalRef);
+      }
+    }
 
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
@@ -58,8 +202,15 @@
 
       } catch (error) {
         console.error("Errore di inizializzazione OneSignal:", error);
-        document.getElementById("status-text").textContent = "Errore durante il caricamento.";
+        document.getElementById("status-text").textContent = t("load_error");
       }
+    });
+
+    // All'avvio: ripristina la lingua salvata (default italiano)
+    document.addEventListener("DOMContentLoaded", function() {
+      let saved = "it";
+      try { saved = localStorage.getItem("toffia-lang") || "it"; } catch (e) {}
+      setLanguage(saved === "en" ? "en" : "it");
     });
 
     async function updateSubscriptionStatus(OneSignal) {
@@ -70,7 +221,7 @@
       const categoriesBox = document.getElementById("categories-box");
 
       if (!OneSignal.Notifications.isPushSupported()) {
-        statusText.textContent = "Le notifiche push non sono supportate da questo browser.";
+        statusText.textContent = t("not_supported");
         btn.style.display = "none";
         privacyBox.style.display = "none";
         categoriesBox.style.display = "none";
@@ -81,9 +232,9 @@
       const isOptedIn = OneSignal.User.PushSubscription.optedIn;
 
       if (permission === "denied") {
-        statusText.textContent = "Notifiche bloccate nel browser. Abilitale nelle impostazioni del sito.";
+        statusText.textContent = t("blocked_status");
         statusText.style.color = "#d9534f";
-        btn.textContent = "Notifiche Bloccate";
+        btn.textContent = t("blocked_btn");
         btn.disabled = true;
         btn.onclick = null;
         privacyBox.style.display = "none";
@@ -98,8 +249,8 @@
         privacyBox.style.display = "none";
         categoriesBox.style.display = "block";
         await syncCategoryToggles(OneSignal);
-        statusText.textContent = "Stato attuale: Iscritto alle notifiche";
-        btn.textContent = "Disattiva Notifiche";
+        statusText.textContent = t("subscribed_status");
+        btn.textContent = t("deactivate_btn");
         btn.disabled = false;
         // La disattivazione richiede conferma
         btn.onclick = () => {
@@ -110,8 +261,8 @@
         // Utente non iscritto: mostra la checkbox, nascondi le categorie
         privacyBox.style.display = "flex";
         categoriesBox.style.display = "none";
-        statusText.textContent = "Stato attuale: Non iscritto";
-        btn.textContent = "Attiva Notifiche";
+        statusText.textContent = t("unsubscribed_status");
+        btn.textContent = t("activate_btn");
         btn.disabled = !privacyCheck.checked;
 
         // Cliccando sul pulsante si innesca la richiesta nativa del browser
@@ -229,10 +380,62 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      padding: 2rem 1rem;
+      padding: 4.5rem 1rem 2rem 1rem;
       box-sizing: border-box;
       background-color: #f4f4f9;
     }
+
+    /* Barra superiore con selettore lingua */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: #ffffff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 1rem;
+      z-index: 500;
+      box-sizing: border-box;
+    }
+    .lang-switch {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      color: #555;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .lang-btn:hover:not(:disabled) {
+      background: #f5f5f8;
+      color: #333;
+    }
+    .lang-btn.active {
+      background: #f0f4fa;
+      border-color: #2f6fb2;
+      color: #2f6fb2;
+    }
+    .lang-btn svg {
+      width: 20px;
+      height: 14px;
+      border-radius: 2px;
+      display: block;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+    }
+
     .card {
       background: white;
       padding: 2.5rem;
@@ -594,19 +797,45 @@
 </head>
 <body>
 
+  <!-- Barra superiore con selettore lingua -->
+  <div class="top-bar">
+    <div class="lang-switch">
+      <button id="lang-it" class="lang-btn active" onclick="setLanguage('it')" aria-label="Italiano">
+        <!-- Bandiera italiana -->
+        <svg viewBox="0 0 30 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="10" height="21" fill="#009246"/>
+          <rect x="10" y="0" width="10" height="21" fill="#ffffff"/>
+          <rect x="20" y="0" width="10" height="21" fill="#ce2b37"/>
+        </svg>
+        Italiano
+      </button>
+      <button id="lang-en" class="lang-btn" onclick="setLanguage('en')" aria-label="English">
+        <!-- Bandiera Regno Unito (Union Jack semplificata) -->
+        <svg viewBox="0 0 30 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="30" height="21" fill="#012169"/>
+          <path d="M0,0 L30,21 M30,0 L0,21" stroke="#ffffff" stroke-width="4"/>
+          <path d="M0,0 L30,21 M30,0 L0,21" stroke="#C8102E" stroke-width="2"/>
+          <path d="M15,0 V21 M0,10.5 H30" stroke="#ffffff" stroke-width="7"/>
+          <path d="M15,0 V21 M0,10.5 H30" stroke="#C8102E" stroke-width="4"/>
+        </svg>
+        English
+      </button>
+    </div>
+  </div>
+
   <div class="card">
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
-    <div class="header-subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608041429</div>
+    <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
+    <div class="header-version">V202608041437</div>
 
-    <p>Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
+    <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
-    <div id="status-text" class="status">Verifica stato...</div>
+    <div id="status-text" class="status" data-i18n="checking">Verifica stato...</div>
 
     <!-- Categorie di notifiche (visibili solo da iscritti) -->
     <div id="categories-box" class="categories-box">
-      <div class="categories-title">Tipologie di notifiche</div>
+      <div class="categories-title" data-i18n="categories_title">Tipologie di notifiche</div>
 
       <div class="category-row">
         <!-- Icona: palazzo comunale con colonne -->
@@ -621,8 +850,8 @@
           <circle cx="17" cy="8.6" r="1.4" fill="#ffffff"/>
         </svg>
         <div class="category-label">
-          <div class="name">Istituzionali e Servizio</div>
-          <div class="desc">Avvisi ufficiali, scadenze, servizi comunali</div>
+          <div class="name" data-i18n="cat1_name">Istituzionali e Servizio</div>
+          <div class="desc" data-i18n="cat1_desc">Avvisi ufficiali, scadenze, servizi comunali</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="toggle-istituzionali" checked>
@@ -642,8 +871,8 @@
           <path d="M27.1 7 L30.5 8.2 L30.5 10.4 L27.1 9.2 Z" fill="#e54b4d"/>
         </svg>
         <div class="category-label">
-          <div class="name">Eventi e Cultura</div>
-          <div class="desc">Manifestazioni, iniziative culturali, appuntamenti</div>
+          <div class="name" data-i18n="cat2_name">Eventi e Cultura</div>
+          <div class="desc" data-i18n="cat2_desc">Manifestazioni, iniziative culturali, appuntamenti</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="toggle-eventi" checked>
@@ -654,50 +883,50 @@
 
     <div id="privacy-box" class="privacy-box" style="display:none;">
       <input type="checkbox" id="privacy-check">
-      <label for="privacy-check">
+      <label for="privacy-check" data-i18n="privacy_label">
         Ho letto e accetto l'<a onclick="openPrivacy(event)">Informativa sulla Privacy</a> relativa al servizio di notifiche.
       </label>
     </div>
 
     <div class="privacy-highlight">
-      <div class="highlight-title">Tutela dei tuoi dati</div>
-      <p>Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</p>
+      <div class="highlight-title" data-i18n="highlight_title">Tutela dei tuoi dati</div>
+      <p data-i18n="highlight_text">Non raccogliamo nessun dato personale. Puoi cancellarti in ogni momento con un click.</p>
     </div>
 
-    <button id="prompt-button">Caricamento...</button>
+    <button id="prompt-button" data-i18n="loading_btn">Caricamento...</button>
   </div>
 
   <!-- Sezione Risoluzione dei problemi -->
   <div class="troubleshooting">
     <div class="troubleshooting-header" onclick="toggleTroubleshooting()">
       <span id="troubleshooting-arrow" class="troubleshooting-arrow">▸</span>
-      Risoluzione dei problemi
+      <span data-i18n="ts_header">Risoluzione dei problemi</span>
     </div>
     <div id="troubleshooting-content" class="troubleshooting-content">
 
-      <h3>Il pulsante indica "Notifiche Bloccate"</h3>
-      <p>Il browser ha memorizzato un rifiuto precedente per questo sito. Per sbloccare: cliccare sull'icona del <strong>lucchetto</strong> (o delle impostazioni) accanto all'indirizzo nella barra di navigazione, individuare la voce <strong>Notifiche</strong> e impostarla su "Chiedi" o "Consenti", quindi ricaricare la pagina.</p>
+      <h3 data-i18n="ts1_h">Il pulsante indica "Notifiche Bloccate"</h3>
+      <p data-i18n="ts1_p">Il browser ha memorizzato un rifiuto precedente per questo sito. Per sbloccare: cliccare sull'icona del <strong>lucchetto</strong> (o delle impostazioni) accanto all'indirizzo nella barra di navigazione, individuare la voce <strong>Notifiche</strong> e impostarla su "Chiedi" o "Consenti", quindi ricaricare la pagina.</p>
 
-      <h3>La richiesta di autorizzazione non compare</h3>
-      <p>Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i "Bloccati". Percorsi analoghi sono disponibili in Firefox ed Edge.</p>
+      <h3 data-i18n="ts2_h">La richiesta di autorizzazione non compare</h3>
+      <p data-i18n="ts2_p">Verificare che il browser non blocchi le notifiche a livello globale. In Chrome: <em>Impostazioni → Privacy e sicurezza → Impostazioni sito → Notifiche</em>; controllare che l'opzione di blocco totale non sia attiva e che questo sito non compaia tra i "Bloccati". Percorsi analoghi sono disponibili in Firefox ed Edge.</p>
 
-      <h3>Le notifiche risultano attive ma non arrivano</h3>
-      <p>Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come "Non disturbare" o "Concentrazione".</p>
+      <h3 data-i18n="ts3_h">Le notifiche risultano attive ma non arrivano</h3>
+      <p data-i18n="ts3_p">Controllare le impostazioni del <strong>sistema operativo</strong>: su Windows (<em>Impostazioni → Sistema → Notifiche</em>) e su macOS (<em>Impostazioni → Notifiche</em>) è possibile che le notifiche del browser siano disattivate o silenziate. Verificare inoltre che non siano attive modalità come "Non disturbare" o "Concentrazione".</p>
 
-      <h3>Utilizzo in modalità di navigazione privata</h3>
-      <p>In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.</p>
+      <h3 data-i18n="ts4_h">Utilizzo in modalità di navigazione privata</h3>
+      <p data-i18n="ts4_p">In modalità in incognito o navigazione anonima le notifiche push non sono generalmente supportate. Effettuare l'iscrizione da una finestra di navigazione normale.</p>
 
-      <h3>Utenti del browser Brave</h3>
+      <h3 data-i18n="ts5_h">Utenti del browser Brave</h3>
       <div class="troubleshooting-note">
-        <p>Il browser <strong>Brave</strong>, per impostazione predefinita, tende a bloccare le notifiche push e i servizi che le veicolano (inclusa la tecnologia Google necessaria al loro recapito). Se si utilizza Brave e l'iscrizione non va a buon fine, è consigliabile utilizzare un browser più adatto al servizio, come Chrome, Firefox o Edge.</p>
-        <p>In alternativa, gli utenti esperti possono configurare Brave manualmente: aprire <em>brave://settings/privacy</em> e attivare l'opzione <strong>"Usa i servizi Google per la messaggistica push"</strong>, riavviare il browser, quindi verificare che gli <strong>Shields</strong> (icona del leone nella barra degli indirizzi) non blocchino elementi di questa pagina e che le notifiche per questo sito siano consentite in <em>brave://settings/content/notifications</em>.</p>
+        <p data-i18n="ts5_p1">Il browser <strong>Brave</strong>, per impostazione predefinita, tende a bloccare le notifiche push e i servizi che le veicolano (inclusa la tecnologia Google necessaria al loro recapito). Se si utilizza Brave e l'iscrizione non va a buon fine, è consigliabile utilizzare un browser più adatto al servizio, come Chrome, Firefox o Edge.</p>
+        <p data-i18n="ts5_p2">In alternativa, gli utenti esperti possono configurare Brave manualmente: aprire <em>brave://settings/privacy</em> e attivare l'opzione <strong>"Usa i servizi Google per la messaggistica push"</strong>, riavviare il browser, quindi verificare che gli <strong>Shields</strong> (icona del leone nella barra degli indirizzi) non blocchino elementi di questa pagina e che le notifiche per questo sito siano consentite in <em>brave://settings/content/notifications</em>.</p>
       </div>
 
-      <h3>Dispositivi mobili</h3>
-      <p>Su <strong>Android</strong> il servizio funziona con i principali browser (Chrome, Firefox, Edge). Su <strong>iPhone e iPad</strong> (iOS 16.4 o successivo) è necessario prima aggiungere questa pagina alla schermata Home tramite il menu di condivisione di Safari ("Aggiungi a Home"), quindi aprirla dall'icona creata ed effettuare l'iscrizione da lì.</p>
+      <h3 data-i18n="ts6_h">Dispositivi mobili</h3>
+      <p data-i18n="ts6_p">Su <strong>Android</strong> il servizio funziona con i principali browser (Chrome, Firefox, Edge). Su <strong>iPhone e iPad</strong> (iOS 16.4 o successivo) è necessario prima aggiungere questa pagina alla schermata Home tramite il menu di condivisione di Safari ("Aggiungi a Home"), quindi aprirla dall'icona creata ed effettuare l'iscrizione da lì.</p>
 
-      <h3>Il problema persiste</h3>
-      <p>Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
+      <h3 data-i18n="ts7_h">Il problema persiste</h3>
+      <p data-i18n="ts7_p">Provare a ricaricare la pagina forzando l'aggiornamento (Ctrl+F5 su computer), oppure ripetere l'operazione con un browser differente. Se le difficoltà continuano, è possibile segnalare il problema al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
 
     </div>
   </div>
@@ -706,14 +935,14 @@
   <div id="confirm-modal" class="modal-overlay">
     <div class="modal-content confirm-content">
       <div class="modal-header">
-        <h2>Disattivare le notifiche?</h2>
+        <h2 data-i18n="confirm_title">Disattivare le notifiche?</h2>
       </div>
       <div class="modal-body">
-        <p>Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?</p>
+        <p data-i18n="confirm_text">Stai per disattivare le notifiche del Comune di Toffia. Non riceverai più alcuna comunicazione su questo dispositivo. Vuoi procedere?</p>
       </div>
       <div class="confirm-buttons">
-        <button class="btn-secondary" onclick="confirmNo()">No, non disattivare le notifiche</button>
-        <button class="btn-danger" onclick="confirmYes()">Sì, disattiva le notifiche</button>
+        <button class="btn-secondary" onclick="confirmNo()" data-i18n="confirm_no">No, non disattivare le notifiche</button>
+        <button class="btn-danger" onclick="confirmYes()" data-i18n="confirm_yes">Sì, disattiva le notifiche</button>
       </div>
     </div>
   </div>
@@ -722,28 +951,28 @@
   <div id="privacy-modal" class="modal-overlay" onclick="if(event.target === this) closePrivacy();">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Informativa sulla Privacy</h2>
+        <h2 data-i18n="pm_title">Informativa sulla Privacy</h2>
         <button class="modal-close" onclick="closePrivacy()" aria-label="Chiudi">&times;</button>
       </div>
       <div class="modal-body">
-        <h3>Titolare del trattamento</h3>
-        <p>Il Titolare del trattamento dei dati e responsabile della sicurezza è il <strong>Comune di Toffia</strong>, che gestisce il servizio di notifiche istituzionali oggetto della presente informativa.</p>
+        <h3 data-i18n="pm1_h">Titolare del trattamento</h3>
+        <p data-i18n="pm1_p">Il Titolare del trattamento dei dati e responsabile della sicurezza è il <strong>Comune di Toffia</strong>, che gestisce il servizio di notifiche istituzionali oggetto della presente informativa.</p>
 
-        <h3>Finalità del servizio</h3>
-        <p>Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.</p>
+        <h3 data-i18n="pm2_h">Finalità del servizio</h3>
+        <p data-i18n="pm2_p">Il servizio consente di ricevere sul proprio dispositivo notifiche push relative a comunicazioni istituzionali, avvisi e informazioni di pubblica utilità del Comune di Toffia. L'iscrizione è facoltativa e avviene esclusivamente su iniziativa dell'utente.</p>
 
-        <h3>Dati trattati</h3>
-        <p>Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.</p>
-        <p>L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.</p>
+        <h3 data-i18n="pm3_h">Dati trattati</h3>
+        <p data-i18n="pm3_p1">Per l'erogazione del servizio <strong>non viene raccolto alcun dato personale identificativo</strong>: nessun nome, cognome, indirizzo e-mail, numero di telefono o altro riferimento alla persona.</p>
+        <p data-i18n="pm3_p2">L'unico dato tecnico trattato è il <strong>token del dispositivo</strong> (identificativo tecnico anonimo generato dal browser), necessario esclusivamente per il recapito delle notifiche, insieme alle <strong>preferenze sulle tipologie di notifica</strong> selezionate dall'utente in questa pagina. Tali dati sono gestiti dalla piattaforma <strong>OneSignal</strong>, fornitore tecnico del servizio di invio, e non sono riconducibili alla persona.</p>
 
-        <h3>Revoca dell'iscrizione</h3>
-        <p>L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante "Disattiva Notifiche" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.</p>
+        <h3 data-i18n="pm4_h">Revoca dell'iscrizione</h3>
+        <p data-i18n="pm4_p">L'utente può disattivare le notifiche in qualsiasi momento tramite il pulsante "Disattiva Notifiche" presente in questa pagina, oppure revocando il permesso notifiche dalle impostazioni del proprio browser. È inoltre possibile disattivare singole tipologie di notifica tramite gli appositi interruttori. La disattivazione comporta la cessazione immediata dell'invio.</p>
 
-        <h3>Diritti dell'interessato</h3>
-        <p>Ai sensi del Regolamento (UE) 2016/679 (GDPR), l'utente può esercitare i propri diritti (accesso, cancellazione, limitazione, opposizione) rivolgendosi al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
+        <h3 data-i18n="pm5_h">Diritti dell'interessato</h3>
+        <p data-i18n="pm5_p">Ai sensi del Regolamento (UE) 2016/679 (GDPR), l'utente può esercitare i propri diritti (accesso, cancellazione, limitazione, opposizione) rivolgendosi al Comune di Toffia attraverso i canali istituzionali dell'Ente.</p>
       </div>
       <div class="modal-footer">
-        <button onclick="closePrivacy()">Chiudi</button>
+        <button onclick="closePrivacy()" data-i18n="pm_close">Chiudi</button>
       </div>
     </div>
   </div>
