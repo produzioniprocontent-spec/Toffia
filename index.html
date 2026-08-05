@@ -13,6 +13,8 @@
     let currentLang = "it";
 
     // ====== IDENTITÀ STABILE DEL DISPOSITIVO (anti-duplicazione) ======
+    // Usata SOLO al momento dell'iscrizione, non al caricamento della pagina:
+    // così i visitatori che non si iscrivono non generano record su OneSignal.
     const DEVICE_ID_KEY = "toffia-device-id";
     function getOrCreateDeviceId() {
       let id = null;
@@ -209,11 +211,9 @@
           serviceWorkerParam: { scope: "/Toffia/" }
         });
 
-        try {
-          await OneSignal.login(getOrCreateDeviceId());
-        } catch (e) {
-          console.log("Login identità dispositivo non riuscito:", e);
-        }
+        // NOTA: nessun login() al caricamento. L'identità del dispositivo viene
+        // comunicata a OneSignal solo quando l'utente si iscrive davvero,
+        // così i semplici visitatori non generano record "no push token".
 
         await updateSubscriptionStatus(OneSignal);
 
@@ -316,6 +316,7 @@
         btn.onclick = async () => {
           if (!privacyCheck.checked) return;
           try {
+            // L'identità stabile viene comunicata SOLO ora, all'iscrizione reale
             try { await OneSignal.login(getOrCreateDeviceId()); } catch (e) {}
 
             if (Notification.permission === "granted" && OneSignal.User.PushSubscription.id) {
@@ -855,7 +856,7 @@
     <img src="logo-comune-toffia.png" alt="Stemma del Comune di Toffia" class="logo">
     <div class="header-title">Comune di Toffia</div>
     <div class="header-subtitle" data-i18n="subtitle">Centro Notifiche</div>
-    <div class="header-version">V202608042000</div>
+    <div class="header-version">V202608051318</div>
 
     <p data-i18n="intro">Gestisci le tue preferenze per la ricezione delle comunicazioni istituzionali in tempo reale.</p>
 
